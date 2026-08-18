@@ -9,7 +9,7 @@ Functions provide in production. Lets you run the full app with just Python.
 
 Production still uses functions/api/*.js on Cloudflare — this file is dev-only.
 """
-import json, os, ssl, sys
+import json, os, re, ssl, sys, time
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs, urlencode, quote
 from urllib.request import Request, urlopen
@@ -209,8 +209,98 @@ def api_me(qs, headers=None):
     return {"email": email, "access": bool(email)}
 
 
+DEFAULT_FEEDS = [
+    ("BusinessWorld", "https://www.bworldonline.com/feed/"),
+    ("Inquirer Business", "https://business.inquirer.net/feed"),
+    ("BusinessMirror", "https://businessmirror.com.ph/feed/"),
+    ("Philstar Business", "https://www.philstar.com/rss/business"),
+    ("Manila Bulletin", "https://mb.com.ph/feed/"),
+    ("Manila Times", "https://www.manilatimes.net/business/feed"),
+    ("GMA Money", "https://data.gmanetwork.com/gno/rss/money/feed.xml"),
+    ("Rappler Business", "https://www.rappler.com/business/feed/"),
+]
+
+def _clean(s):
+    s = re.sub(r"<!\[CDATA\[|\]\]>", "", s or "")
+    s = re.sub(r"<[^>]+>", " ", s)
+    s = s.replace("&amp;", "&").replace("&quot;", '"').replace("&#39;", "'").replace("&apos;", "'")
+    s = re.sub(r"&#(\d+);", lambda m: chr(int(m.group(1))), s)
+    s = re.sub(r"&[a-z]+;", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+def _tag(block, name):
+    m = re.search(rf"<{name}[^>]*>([\s\S]*?)</{name}>", block, re.I)
+    return m.group(1) if m else ""
+
+def _parse_dt(s):
+    if not s:
+        return 0
+    try:
+        from email.utils import parsedate_to_datetime
+        return parsedate_to_datetime(s).timestamp()
+    except Exception:
+        try:
+            import datetime
+            return datetime.datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp()
+        except Exception:
+            return 0
+
+def _parse_feed(xml, source):
+    out = []
+    import datetime
+    for b in re.findall(r"<(?:item|entry)\b[\s\S]*?</(?:item|entry)>", xml, re.I):
+        title = _clean(_tag(b, "title"))
+        link = (_tag(b, "link") or "").strip()
+        if not link:
+            m = re.search(r"<link[^>]*href=[\"']([^\"']+)[\"']", b, re.I)
+            if m:
+                link = m.group(1)
+        ts = _parse_dt(_tag(b, "pubDate") or _tag(b, "published") or _tag(b, "updated") or _tag(b, "dc:date"))
+        summary = _clean(_tag(b, "description") or _tag(b, "summary") or "")[:220]
+        if title and link:
+            d = datetime.datetime.fromtimestamp(ts).date().isoformat() if ts else ""
+            out.append({"title": title, "url": link, "source": source, "summary": summary, "date": d, "ts": ts})
+    return out[:12]
+
+def api_news(qs):
+    days = min(int(qs.get("days", ["7"])[0] or 7), 30)
+    q = (qs.get("q", [""])[0] or "").lower()
+    feeds = DEFAULT_FEEDS
+    try:
+        with open(os.path.join(ROOT, "data", "news-sources.json"), encoding="utf-8") as f:
+            j = json.load(f)
+        if j.get("feeds"):
+            feeds = [(x["source"], x["url"]) for x in j["feeds"]]
+    except Exception:
+        pass
+    import concurrent.futures
+    def one(su):
+        s, url = su
+        try:
+            status, body = http_get(url, headers={"User-Agent": "Mozilla/5.0 market-intel"}, retries=0, timeout=9)
+            return _parse_feed(body.decode("utf-8", "ignore"), s) if status == 200 else []
+        except Exception:
+            return []
+    items = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:
+        for r in ex.map(one, feeds):
+            items += r
+    cutoff = time.time() - days * 86400
+    seen = set(); res = []
+    for a in sorted(items, key=lambda x: x["ts"], reverse=True):
+        if a["url"] in seen:
+            continue
+        seen.add(a["url"])
+        if a["ts"] and a["ts"] < cutoff:
+            continue
+        if q and q not in (a["title"] + " " + a["summary"]).lower():
+            continue
+        res.append({k: a[k] for k in ("title", "url", "source", "summary", "date")})
+    return {"articles": res[:80], "sources": len(feeds), "count": len(res[:80])}
+
+
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,
-          "finnhub": api_finnhub, "digest": api_digest, "me": api_me}
+          "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news}
 
 
 class Handler(SimpleHTTPRequestHandler):

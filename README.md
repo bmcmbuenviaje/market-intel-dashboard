@@ -199,9 +199,27 @@ The dashboard reads the KB from `/api/kb` (KV if present, else the bundled
 
 ---
 
+## Live news feed & Live TV
+
+- **`/api/news`** aggregates RSS/Atom from PH business outlets (BusinessWorld, Inquirer
+  Business, BusinessMirror, Philstar, Manila Bulletin, Manila Times, GMA Money, Rappler,
+  Yahoo Finance) server-side — reliable and not rate-limited like GDELT. It populates the
+  **Live Signal Feed** with recent, linked articles. Edit the source list in
+  `public/data/news-sources.json`.
+- **`streams.html`** (the **📺 Live TV** button) embeds the outlets' YouTube livestreams
+  **muted + autoplay** in a grid, so many can run at once — unmute the one you want, or
+  "Open ↗" it in its own tab. Channels are configured in `public/data/streams.json`
+  (`channelId` drives the always-current live stream). It also links out to each outlet's
+  business page and social channels.
+- **Note on social media:** LinkedIn and Facebook can't be scraped or embedded as a live
+  post feed without their APIs/auth — the app links to those pages and relies on the RSS
+  layer for article-level insight with links.
+
 ## Free data sources actually used
 
+- **PH business RSS feeds** — recent articles + links, no key (see `news-sources.json`).
 - **GDELT 2.0 DOC API** — global news, no key. https://api.gdeltproject.org
 - **Yahoo Finance chart API** — quotes/commodities, no key (unofficial).
 - **Wikidata SPARQL** — ownership graph, no key. https://query.wikidata.org
-- **Finnhub** — company news, free key. https://finnhub.io
+- **Finnhub** — company news, free key (US-focused). https://finnhub.io
+- **YouTube live embeds** — muted livestreams, no key.

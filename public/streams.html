@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live TV · Market Intel</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 14px; }
+    .head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .head h1 { margin: 0; font-size: 18px; }
+    .head .grow { flex: 1; }
+    .hint { color: var(--muted); font-size: 12px; }
+    .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); margin-top: 14px; }
+    .tile { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .tile .bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    .tile .bar strong { font-size: 13px; }
+    .tile .vid { position: relative; aspect-ratio: 16/9; background: #000; }
+    .tile iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .tile .act { margin-left: auto; display: flex; gap: 6px; }
+    .lnk { font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
+    .lnk:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+    .links { margin-top: 20px; }
+    .links h3 { font-size: 14px; margin: 14px 0 6px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chipL { display: inline-block; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 12px; }
+    .chipL:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+    .empty { padding: 40px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div id="gate" class="gate">
+    <form id="gateForm" class="gate-card">
+      <h1>📺 Live TV</h1><p>Enter access code.</p>
+      <input id="gatePass" type="password" autocomplete="off" />
+      <button type="submit">Enter</button><small id="gateErr" class="gate-err"></small>
+    </form>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="wrap">
+      <div class="head">
+        <h1>📺 Live TV</h1>
+        <span class="hint">All streams start <b>muted</b> — click a player's speaker to unmute the one you want. Open ↗ pops it into its own tab.</span>
+        <span class="grow"></span>
+        <a href="index.html" class="btn ghost">← Dashboard</a>
+      </div>
+      <div id="grid" class="grid"></div>
+      <div class="links">
+        <h3>📰 Business news sources</h3>
+        <div class="chips" id="newsLinks"></div>
+        <h3>📱 Social / digital channels</h3>
+        <div class="chips" id="socialLinks"></div>
+        <p class="hint" style="margin-top:12px">Note: LinkedIn and Facebook don't allow embedding a live post feed without their APIs — these open the pages directly. The dashboard's Live Signal Feed aggregates these outlets' articles with links.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/gate.js"></script>
+  <script>
+  document.addEventListener("mi:authed", async () => {
+    let cfg = { channels: [], newsLinks: [], socialLinks: [] };
+    try { cfg = await (await fetch("data/streams.json")).json(); } catch (e) {}
+    const grid = document.getElementById("grid");
+    const live = (cfg.channels || []).filter(c => c.channelId || c.videoId);
+    if (!live.length) { grid.innerHTML = `<div class="empty">Live channels aren't configured yet.</div>`; }
+    grid.innerHTML = live.map(c => {
+      const src = c.videoId
+        ? `https://www.youtube.com/embed/${c.videoId}?autoplay=1&mute=1&playsinline=1`
+        : `https://www.youtube.com/embed/live_stream?channel=${c.channelId}&autoplay=1&mute=1&playsinline=1`;
+      const open = c.videoId ? `https://www.youtube.com/watch?v=${c.videoId}`
+        : `https://www.youtube.com/channel/${c.channelId}/live`;
+      return `<div class="tile"><div class="bar"><strong>${esc(c.name)}</strong>
+        <span class="act"><a class="lnk" href="${open}" target="_blank" rel="noopener">Open ↗</a></span></div>
+        <div class="vid"><iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div></div>`;
+    }).join("");
+    const chip = (l) => `<a class="chipL" href="${l.url}" target="_blank" rel="noopener">${esc(l.name)} ↗</a>`;
+    document.getElementById("newsLinks").innerHTML = (cfg.newsLinks || []).map(chip).join("");
+    document.getElementById("socialLinks").innerHTML = (cfg.socialLinks || []).map(chip).join("");
+  }, { once: true });
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "_note": "channelId (UC...) drives the always-current live embed via youtube.com/embed/live_stream?channel=. Channels only appear live when actually streaming; Yahoo Finance runs a persistent 24/7 stream.",
+  "channels": [
+    { "name": "Yahoo Finance (24/7 markets)", "handle": "YahooFinance", "channelId": "UCEAZeUIeJs0IjQiqTCdVSIg" },
+    { "name": "GMA Integrated News", "handle": "gmanews", "channelId": "UCqYw-CTd1dU2yGI71sEyqNw" },
+    { "name": "ABS-CBN News", "handle": "abscbnnews", "channelId": "UCE2606prvXQc_noEqKxVJXA" },
+    { "name": "ANC 24/7", "handle": "ANCAlerts", "channelId": "UCvi6hEzLM-Z_unKPSuuzKvg" },
+    { "name": "BusinessWorld TV", "handle": "BusinessWorldTV", "channelId": "UCpx8fh6GoIfNxQDrOS1Ihgg" }
+  ],
+  "newsLinks": [
+    { "name": "ABS-CBN ANC Business", "url": "https://www.abs-cbn.com/anc/business-economy" },
+    { "name": "ABS-CBN Business", "url": "https://www.abs-cbn.com/news/business" },
+    { "name": "BusinessWorld", "url": "https://bworldonline.com/" },
+    { "name": "Inquirer Business", "url": "https://business.inquirer.net/" },
+    { "name": "BusinessMirror", "url": "https://businessmirror.com.ph/" },
+    { "name": "Philstar Business", "url": "https://www.philstar.com/business" },
+    { "name": "Manila Bulletin Business", "url": "https://mb.com.ph/category/business" },
+    { "name": "Manila Times Business", "url": "https://www.manilatimes.net/business" },
+    { "name": "GMA Money", "url": "https://www.gmanetwork.com/news/money/" }
+  ],
+  "socialLinks": [
+    { "name": "ANC Alerts (Facebook)", "url": "https://www.facebook.com/ANCalerts/" },
+    { "name": "ABS-CBN News (YouTube)", "url": "https://www.youtube.com/@abscbnnews" },
+    { "name": "ANC (YouTube)", "url": "https://www.youtube.com/@ANCAlerts" },
+    { "name": "GMA News (YouTube)", "url": "https://www.youtube.com/@gmanews" },
+    { "name": "Yahoo Finance (YouTube)", "url": "https://www.youtube.com/@YahooFinance" }
+  ]
+}

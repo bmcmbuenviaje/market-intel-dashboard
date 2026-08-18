@@ -1,0 +1,14 @@
+{
+  "_note": "Verified business RSS/Atom feeds. Overrides the defaults in functions/api/news.js and devserver.py.",
+  "feeds": [
+    { "source": "BusinessWorld", "url": "https://bworldonline.com/economy/feed/" },
+    { "source": "Inquirer Business", "url": "https://business.inquirer.net/feed" },
+    { "source": "BusinessMirror", "url": "https://businessmirror.com.ph/category/business/feed/" },
+    { "source": "Philstar Business", "url": "https://www.philstar.com/rss/business" },
+    { "source": "Manila Bulletin", "url": "https://mb.com.ph/rss/business" },
+    { "source": "Manila Times", "url": "https://www.manilatimes.net/business/feed" },
+    { "source": "GMA Money", "url": "https://data.gmanetwork.com/gno/rss/money/feed.xml" },
+    { "source": "Rappler Business", "url": "https://www.rappler.com/business/feed/" },
+    { "source": "Yahoo Finance", "url": "https://finance.yahoo.com/news/rssindex" }
+  ]
+}

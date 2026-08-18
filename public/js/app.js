@@ -154,21 +154,26 @@
     status(`${view.entities.length} entities in view · curated layer loaded`);
     loadCommodities();
 
-    // 2) Live news fetched in the background; merged in when (if) it arrives.
+    // 2) Live news: RSS aggregator (primary) + GDELT (best-effort), merged in async.
     if (sources.gdelt) {
       status(`${view.entities.length} entities · fetching live news…`);
-      try {
-        const country = FILTERS.state.scope === "country" ? FILTERS.state.country : "";
-        const arts = await DATA.fetchNews({ query: buildQuery(), country, windowDays: FILTERS.state.windowDays });
-        if (token !== S.reqToken) return; // a newer refresh superseded this one
-        const live = arts.map(a => ({ ...a, sentiment: DATA.keywordSentiment(a.title), category: guessCategory(a.title) }));
-        S.news = seedSignals(view.visibleIds).concat(live);
-        renderAll(view);
-        status(`${live.length} live articles · ${view.entities.length} entities in view`);
-      } catch (e) {
-        if (token !== S.reqToken) return;
-        status("Live news unavailable (rate-limited or offline) — showing curated + seed signals.", false);
-      }
+      const country = FILTERS.state.scope === "country" ? FILTERS.state.country : "";
+      const [feedR, gdeltR] = await Promise.allSettled([
+        DATA.fetchNewsFeed({ days: FILTERS.state.windowDays }),
+        DATA.fetchNews({ query: buildQuery(), country, windowDays: FILTERS.state.windowDays })
+      ]);
+      if (token !== S.reqToken) return; // a newer refresh superseded this one
+      const mk = (a) => ({ ...a, sentiment: DATA.keywordSentiment((a.title || "") + " " + (a.summary || "")),
+        category: a.category || guessCategory((a.title || "") + " " + (a.summary || "")) });
+      let live = [];
+      if (feedR.status === "fulfilled") live = live.concat(feedR.value.map(mk));
+      if (gdeltR.status === "fulfilled") live = live.concat(gdeltR.value.map(mk));
+      const seenU = new Set(); live = live.filter(a => a.url && !seenU.has(a.url) && (seenU.add(a.url), true));
+      S.news = seedSignals(view.visibleIds).concat(live);
+      renderAll(view);
+      const ok = feedR.status === "fulfilled" || gdeltR.status === "fulfilled";
+      status(ok ? `${live.length} live articles · ${view.entities.length} entities in view`
+        : "Live news unavailable — showing curated + seed signals.", ok);
     }
   }
 
@@ -283,21 +288,24 @@
   /* ---------- Feed ---------- */
   function renderFeed(news) {
     const el = $("feed");
-    const items = [...news].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 60);
-    if (!items.length) { el.innerHTML = `<p class="muted" style="padding:8px">No signals. Deploy the proxy or widen filters.</p>`; return; }
+    const items = [...news].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 80);
+    if (!items.length) { el.innerHTML = `<p class="muted" style="padding:8px">No signals yet — fetching live news…</p>`; return; }
     el.innerHTML = items.map(n => {
       const sc = n.sentiment > 5 ? "senti-pos" : n.sentiment < -5 ? "senti-neg" : "senti-neu";
       const v = n.verified === false ? `<span class="chip badge-unverified">unverified</span>` :
-                n.verified === true ? `<span class="chip badge-verified">verified</span>` : "";
+                n.verified === true ? `<span class="chip badge-verified">sourced</span>` : "";
       return `<div class="feed-item">
-        <a href="${n.url}" target="_blank" rel="noopener">${n.title}</a>
+        <a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.title)}</a>
+        ${n.summary ? `<div class="feed-sum">${esc(n.summary)}</div>` : ""}
         <div class="meta">
-          <span class="${sc}">sentiment ${n.sentiment >= 0 ? "+" : ""}${n.sentiment}</span>
-          <span class="chip">${n.category || "—"}</span>
-          <span>${n.domain || ""}</span><span>${n.date || ""}</span>${v}
+          <span class="chip">${esc(n.source || n.domain || "—")}</span>
+          <span>${esc(n.date || "")}</span>
+          <span class="${sc}">${n.sentiment >= 0 ? "+" : ""}${n.sentiment}</span>
+          <span class="chip">${esc(n.category || "—")}</span>${v}
         </div></div>`;
     }).join("");
   }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
   /* ---------- Entity profile ---------- */
   function selectEntity(id) {
