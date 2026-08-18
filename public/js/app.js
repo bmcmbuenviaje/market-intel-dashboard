@@ -435,16 +435,17 @@
     try {
       const s = await DATA.fetchSocial(e.name);
       if (token !== S.socialToken) return;
-      const cfg = s.configured || {};
-      if (!cfg.youtube && !cfg.reddit) {
-        box.innerHTML = `<span class="muted" style="font-size:12px">Not configured — add <code>YOUTUBE_API_KEY</code> and/or <code>REDDIT_CLIENT_ID</code> + <code>REDDIT_CLIENT_SECRET</code> in Cloudflare to enable.</span>`;
+      const groups = [["YouTube", s.youtube], ["Bluesky", s.bluesky], ["Reddit", s.reddit], ["HackerNews", s.hackernews]];
+      const items = groups.flatMap(([tag, arr]) => (arr || []).map(x => ({ ...x, tag })));
+      const meta = document.getElementById("socialMeta");
+      if (meta) meta.textContent = items.length ? `· ${items.length} mention(s) · sentiment ${s.sentiment >= 0 ? "+" : ""}${s.sentiment}` : "";
+      if (!items.length) {
+        const ytOff = s.configured && !s.configured.youtube;
+        box.innerHTML = `<span class="muted" style="font-size:12px">No recent social mentions found${ytOff ? " — add <code>YOUTUBE_API_KEY</code> in Cloudflare for video coverage" : ""}.</span>`;
         return;
       }
-      const meta = document.getElementById("socialMeta");
-      if (meta) meta.textContent = `· ${s.mentions} mention(s) · sentiment ${s.sentiment >= 0 ? "+" : ""}${s.sentiment}`;
-      const items = [...(s.youtube || []).map(x => ({ ...x, tag: "YouTube" })), ...(s.reddit || []).map(x => ({ ...x, tag: "Reddit" }))];
-      if (!items.length) { box.innerHTML = `<span class="muted" style="font-size:12px">No recent YouTube/Reddit mentions found.</span>`; return; }
-      box.innerHTML = items.slice(0, 12).map(n => `<div class="rel-item">
+      items.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      box.innerHTML = items.slice(0, 14).map(n => `<div class="rel-item">
         <span class="chip">${n.tag}</span> <a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.title)}</a>
         <br><span class="muted" style="font-size:11px">${esc(n.source || "")}${n.date ? " · " + esc(n.date) : ""}${n.score != null ? " · ▲" + n.score : ""}</span></div>`).join("");
     } catch (err) {

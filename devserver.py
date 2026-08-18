@@ -349,41 +349,91 @@ def _yt_social(q, key):
     except Exception as e:
         return [], True, str(e)
 
-def _reddit_social(q, cid, secret):
-    if not cid or not secret:
-        return [], False, None
+def _bluesky_social(q):
+    api = "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?" + urlencode({"q": q, "limit": "12"})
     try:
-        import base64, datetime
-        from urllib.request import Request as _R
-        auth = base64.b64encode(f"{cid}:{secret}".encode()).decode()
-        req = _R("https://www.reddit.com/api/v1/access_token", data=b"grant_type=client_credentials",
-                 headers={"Authorization": "Basic " + auth, "content-type": "application/x-www-form-urlencoded", "User-Agent": REDDIT_UA})
-        tok = json.loads(urlopen(req, timeout=8, context=SSL_CTX).read()).get("access_token")
-        if not tok:
-            return [], True, "no token"
-        url = "https://oauth.reddit.com/search?" + urlencode({"q": q, "sort": "new", "limit": "10", "type": "link"})
-        req2 = _R(url, headers={"Authorization": "Bearer " + tok, "User-Agent": REDDIT_UA})
-        d = json.loads(urlopen(req2, timeout=8, context=SSL_CTX).read())
+        status, body = http_get(api, headers={"User-Agent": BROWSER_UA}, retries=0, timeout=8)
+        if status != 200:
+            return [], f"bsky {status}"
+        d = json.loads(body)
         items = []
-        for c in d.get("data", {}).get("children", []):
-            p = c.get("data", {})
-            items.append({"title": _sdecode(p.get("title", "")), "url": "https://www.reddit.com" + p.get("permalink", ""),
-                          "source": "r/" + p.get("subreddit", ""),
-                          "date": datetime.datetime.utcfromtimestamp(p.get("created_utc", 0)).date().isoformat(),
-                          "score": p.get("score")})
-        return items, True, None
+        for p in d.get("posts", []):
+            rec = p.get("record", {}) or {}
+            text = _sdecode((rec.get("text") or "").replace("\n", " ").strip())[:160]
+            if not text:
+                continue
+            handle = (p.get("author", {}) or {}).get("handle", "")
+            uri = p.get("uri", "")
+            items.append({"title": text, "url": f"https://bsky.app/profile/{handle}/post/{uri.split('/')[-1]}",
+                          "source": "@" + handle, "date": (rec.get("createdAt") or p.get("indexedAt") or "")[:10], "score": p.get("likeCount")})
+        return items, None
     except Exception as e:
-        return [], True, str(e)
+        return [], str(e)
+
+def _hn_social(q):
+    api = "https://hn.algolia.com/api/v1/search_by_date?" + urlencode({"query": q, "tags": "story", "hitsPerPage": "6"})
+    try:
+        status, body = http_get(api, retries=0, timeout=8)
+        if status != 200:
+            return [], f"hn {status}"
+        d = json.loads(body)
+        items = []
+        for h in d.get("hits", []):
+            if not h.get("title"):
+                continue
+            items.append({"title": _sdecode(h["title"]), "url": h.get("url") or f"https://news.ycombinator.com/item?id={h.get('objectID')}",
+                          "source": "Hacker News", "date": (h.get("created_at") or "")[:10], "score": h.get("points")})
+        return items, None
+    except Exception as e:
+        return [], str(e)
+
+def _reddit_map(d):
+    import datetime
+    out = []
+    for c in d.get("data", {}).get("children", []):
+        p = c.get("data", {})
+        out.append({"title": _sdecode(p.get("title", "")), "url": "https://www.reddit.com" + p.get("permalink", ""),
+                    "source": "r/" + p.get("subreddit", ""),
+                    "date": datetime.datetime.utcfromtimestamp(p.get("created_utc", 0)).date().isoformat(), "score": p.get("score")})
+    return out
+
+def _reddit_social(q, cid, secret):
+    if cid and secret:
+        try:
+            import base64
+            from urllib.request import Request as _R
+            auth = base64.b64encode(f"{cid}:{secret}".encode()).decode()
+            req = _R("https://www.reddit.com/api/v1/access_token", data=b"grant_type=client_credentials",
+                     headers={"Authorization": "Basic " + auth, "content-type": "application/x-www-form-urlencoded", "User-Agent": REDDIT_UA})
+            tok = json.loads(urlopen(req, timeout=8, context=SSL_CTX).read()).get("access_token")
+            if tok:
+                url = "https://oauth.reddit.com/search?" + urlencode({"q": q, "sort": "new", "limit": "10", "type": "link"})
+                req2 = _R(url, headers={"Authorization": "Bearer " + tok, "User-Agent": REDDIT_UA})
+                return _reddit_map(json.loads(urlopen(req2, timeout=8, context=SSL_CTX).read())), True, None
+        except Exception:
+            pass
+    try:
+        api = "https://www.reddit.com/search.json?" + urlencode({"q": q, "sort": "new", "limit": "10"})
+        status, body = http_get(api, headers={"User-Agent": BROWSER_UA}, retries=0, timeout=8)
+        if status != 200:
+            return [], False, f"public {status}"
+        return _reddit_map(json.loads(body)), False, None
+    except Exception as e:
+        return [], False, str(e)
 
 def api_social(qs):
     q = (qs.get("q", [""])[0] or "").strip()
     if not q:
-        return {"youtube": [], "reddit": [], "mentions": 0}
+        return {"mentions": 0}
     yt, ytc, yte = _yt_social(q, os.environ.get("YOUTUBE_API_KEY"))
+    bs, bse = _bluesky_social(q)
+    hn, hne = _hn_social(q)
     rd, rdc, rde = _reddit_social(q, os.environ.get("REDDIT_CLIENT_ID"), os.environ.get("REDDIT_CLIENT_SECRET"))
-    allt = " ".join(x["title"] for x in yt + rd)
-    return {"youtube": yt, "reddit": rd, "mentions": len(yt) + len(rd), "sentiment": _senti(allt),
-            "configured": {"youtube": ytc, "reddit": rdc}, "errors": {"youtube": yte, "reddit": rde}}
+    allitems = yt + bs + hn + rd
+    allt = " ".join(x["title"] for x in allitems)
+    return {"youtube": yt, "bluesky": bs, "hackernews": hn, "reddit": rd, "mentions": len(allitems), "sentiment": _senti(allt),
+            "configured": {"youtube": ytc, "reddit": rdc, "bluesky": True, "hackernews": True},
+            "errors": {"youtube": yte, "bluesky": bse, "hackernews": hne, "reddit": rde}}
 
 def api_news(qs):
     days = min(int(qs.get("days", ["7"])[0] or 7), 30)
