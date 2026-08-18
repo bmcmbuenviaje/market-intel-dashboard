@@ -309,6 +309,82 @@ def api_entity_news(qs):
     arts = _gn_entity(q) or _gdelt_entity(q)
     return {"articles": arts[:15]}
 
+
+REDDIT_UA = "web:market-intel-dashboard:v1.0 (PH market intelligence tool)"
+_SPOS = ["surge", "record", "growth", "win", "launch", "partner", "expand", "best", "love", "great", "strong", "boost", "success"]
+_SNEG = ["loss", "cut", "decline", "ban", "fine", "probe", "lawsuit", "fraud", "weak", "drop", "scam", "fail", "boycott", "angry", "complaint"]
+
+def _sdecode(s):
+    s = str(s or "").replace("&amp;", "&").replace("&quot;", '"').replace("&#39;", "'").replace("&apos;", "'").replace("&lt;", "<").replace("&gt;", ">")
+    return re.sub(r"&#(\d+);", lambda m: chr(int(m.group(1))), s)
+
+def _senti(t):
+    t = (t or "").lower(); s = 0
+    for w in _SPOS:
+        if w in t: s += 1
+    for w in _SNEG:
+        if w in t: s -= 1
+    return max(-100, min(100, s * 15))
+
+def _yt_social(q, key):
+    if not key:
+        return [], False, None
+    url = "https://www.googleapis.com/youtube/v3/search?" + urlencode({
+        "part": "snippet", "type": "video", "order": "date", "maxResults": "8",
+        "relevanceLanguage": "en", "q": q, "key": key})
+    try:
+        status, body = http_get(url, retries=0, timeout=8)
+        if status != 200:
+            return [], True, f"yt {status}"
+        d = json.loads(body)
+        items = []
+        for i in d.get("items", []):
+            vid = (i.get("id") or {}).get("videoId")
+            if not vid:
+                continue
+            sn = i.get("snippet", {})
+            items.append({"title": _sdecode(sn.get("title", "")), "url": f"https://www.youtube.com/watch?v={vid}",
+                          "source": sn.get("channelTitle", ""), "date": (sn.get("publishedAt") or "")[:10]})
+        return items, True, None
+    except Exception as e:
+        return [], True, str(e)
+
+def _reddit_social(q, cid, secret):
+    if not cid or not secret:
+        return [], False, None
+    try:
+        import base64, datetime
+        from urllib.request import Request as _R
+        auth = base64.b64encode(f"{cid}:{secret}".encode()).decode()
+        req = _R("https://www.reddit.com/api/v1/access_token", data=b"grant_type=client_credentials",
+                 headers={"Authorization": "Basic " + auth, "content-type": "application/x-www-form-urlencoded", "User-Agent": REDDIT_UA})
+        tok = json.loads(urlopen(req, timeout=8, context=SSL_CTX).read()).get("access_token")
+        if not tok:
+            return [], True, "no token"
+        url = "https://oauth.reddit.com/search?" + urlencode({"q": q, "sort": "new", "limit": "10", "type": "link"})
+        req2 = _R(url, headers={"Authorization": "Bearer " + tok, "User-Agent": REDDIT_UA})
+        d = json.loads(urlopen(req2, timeout=8, context=SSL_CTX).read())
+        items = []
+        for c in d.get("data", {}).get("children", []):
+            p = c.get("data", {})
+            items.append({"title": _sdecode(p.get("title", "")), "url": "https://www.reddit.com" + p.get("permalink", ""),
+                          "source": "r/" + p.get("subreddit", ""),
+                          "date": datetime.datetime.utcfromtimestamp(p.get("created_utc", 0)).date().isoformat(),
+                          "score": p.get("score")})
+        return items, True, None
+    except Exception as e:
+        return [], True, str(e)
+
+def api_social(qs):
+    q = (qs.get("q", [""])[0] or "").strip()
+    if not q:
+        return {"youtube": [], "reddit": [], "mentions": 0}
+    yt, ytc, yte = _yt_social(q, os.environ.get("YOUTUBE_API_KEY"))
+    rd, rdc, rde = _reddit_social(q, os.environ.get("REDDIT_CLIENT_ID"), os.environ.get("REDDIT_CLIENT_SECRET"))
+    allt = " ".join(x["title"] for x in yt + rd)
+    return {"youtube": yt, "reddit": rd, "mentions": len(yt) + len(rd), "sentiment": _senti(allt),
+            "configured": {"youtube": ytc, "reddit": rdc}, "errors": {"youtube": yte, "reddit": rde}}
+
 def api_news(qs):
     days = min(int(qs.get("days", ["7"])[0] or 7), 30)
     q = (qs.get("q", [""])[0] or "").lower()
@@ -348,7 +424,7 @@ def api_news(qs):
 
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,
           "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news,
-          "entity-news": api_entity_news}
+          "entity-news": api_entity_news, "social": api_social}
 
 
 class Handler(SimpleHTTPRequestHandler):

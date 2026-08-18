@@ -9,13 +9,18 @@ const SOURCES = [
   { id: "yahoo", label: "Yahoo Finance (commodities)", test: "/api/yahoo?symbol=GC=F" },
   { id: "wikidata", label: "Wikidata ownership", test: "/api/wikidata?id=Q1706083" },
   { id: "finnhub", label: "Finnhub company news (key)", test: "/api/finnhub?symbol=JFC.PS" },
-  { id: "knowledge", label: "Knowledge base store (/api/kb)", test: "/api/kb" }
+  { id: "knowledge", label: "Knowledge base store (/api/kb)", test: "/api/kb" },
+  { id: "news", label: "Live news feed (/api/news)", test: "/api/news?days=3" },
+  { id: "social", label: "Social listening (/api/social)", test: "/api/social?q=Jollibee" }
 ];
 const KEYS = [
   { id: "ADMIN_TOKEN", label: "Admin save token" },
   { id: "KB_STORE", label: "KV namespace binding" },
   { id: "FINNHUB_KEY", label: "Finnhub" },
-  { id: "DIGEST_WEBHOOK", label: "Digest webhook" }
+  { id: "DIGEST_WEBHOOK", label: "Digest webhook" },
+  { id: "YOUTUBE_API_KEY", label: "YouTube Data API (social)" },
+  { id: "REDDIT_CLIENT_ID", label: "Reddit client id (social)" },
+  { id: "REDDIT_CLIENT_SECRET", label: "Reddit client secret (social)" }
 ];
 
 async function init() {
