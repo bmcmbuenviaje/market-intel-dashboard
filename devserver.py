@@ -257,10 +257,31 @@ def _parse_feed(xml, source):
                 link = m.group(1)
         ts = _parse_dt(_tag(b, "pubDate") or _tag(b, "published") or _tag(b, "updated") or _tag(b, "dc:date"))
         summary = _clean(_tag(b, "description") or _tag(b, "summary") or "")[:220]
+        sm = re.search(r"<source[^>]*>([\s\S]*?)</source>", b, re.I)
+        item_source = _clean(sm.group(1)) if sm else source
+        if sm and title.endswith(" - " + item_source):
+            title = title[: -(len(item_source) + 3)]
         if title and link:
             d = datetime.datetime.fromtimestamp(ts).date().isoformat() if ts else ""
-            out.append({"title": title, "url": link, "source": source, "summary": summary, "date": d, "ts": ts})
+            out.append({"title": title, "url": link, "source": item_source, "summary": summary, "date": d, "ts": ts})
     return out[:12]
+
+
+def api_entity_news(qs):
+    q = (qs.get("q", [""])[0] or "").strip()
+    if not q:
+        return {"articles": []}
+    query = f'"{q}"' if " " in q else q
+    api = "https://news.google.com/rss/search?" + urlencode({"q": query, "hl": "en-PH", "gl": "PH", "ceid": "PH:en"})
+    try:
+        status, body = http_get(api, headers={"User-Agent": "Mozilla/5.0 market-intel"}, retries=0, timeout=9)
+        if status != 200:
+            return {"articles": [], "error": f"news {status}"}
+        items = _parse_feed(body.decode("utf-8", "ignore"), "Google News")
+        items.sort(key=lambda x: x["ts"], reverse=True)
+        return {"articles": [{k: a[k] for k in ("title", "url", "source", "date")} for a in items[:12]]}
+    except Exception as e:
+        return {"articles": [], "error": str(e)}
 
 def api_news(qs):
     days = min(int(qs.get("days", ["7"])[0] or 7), 30)
@@ -300,7 +321,8 @@ def api_news(qs):
 
 
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,
-          "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news}
+          "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news,
+          "entity-news": api_entity_news}
 
 
 class Handler(SimpleHTTPRequestHandler):

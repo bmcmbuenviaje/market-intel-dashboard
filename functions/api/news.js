@@ -55,14 +55,18 @@ function parseFeed(xml, source) {
   const out = [];
   const blocks = xml.match(/<(item|entry)\b[\s\S]*?<\/(item|entry)>/gi) || [];
   for (const b of blocks) {
-    const title = clean(tag(b, "title"));
+    let title = clean(tag(b, "title"));
     let link = stripCdata(tag(b, "link")).trim();
     if (!link) { const m = b.match(/<link[^>]*href=["']([^"']+)["']/i); if (m) link = m[1]; }
     const rawDate = tag(b, "pubDate") || tag(b, "published") || tag(b, "updated") || tag(b, "dc:date");
     const ts = rawDate ? Date.parse(rawDate) : NaN;
     const summary = clean(tag(b, "description") || tag(b, "summary") || "").slice(0, 220);
+    // per-item <source> (Google News aggregator feeds carry the real outlet here)
+    const sm = b.match(/<source[^>]*>([\s\S]*?)<\/source>/i);
+    const itemSource = sm ? clean(sm[1]) : source;
+    if (sm && title.endsWith(" - " + itemSource)) title = title.slice(0, -(itemSource.length + 3));
     if (title && link) out.push({
-      title, url: link, source, summary,
+      title, url: link, source: itemSource, summary,
       date: isNaN(ts) ? "" : new Date(ts).toISOString().slice(0, 10),
       ts: isNaN(ts) ? 0 : ts
     });

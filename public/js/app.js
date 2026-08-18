@@ -2,7 +2,7 @@
 (function () {
   const S = {
     taxonomy: null, kb: null, news: [], sparkChart: null, reqToken: 0,
-    tab: "targets", view: null
+    tab: "targets", view: null, entNewsToken: 0
   };
 
   /* ---- watchlist (localStorage) ---- */
@@ -339,6 +339,7 @@
       ${e.ticker ? kv("Ticker", e.ticker) : ""}
       ${e.website ? kv("Website", `<a href="${e.website}" target="_blank" rel="noopener">${e.website}</a>`) : ""}
       ${parent ? kv("Parent", `<a data-nav="${parent.id}">${parent.name}</a>`) : ""}
+      ${linksRow(e)}
       ${relGroup("Owns / subsidiaries", owns)}
       ${relGroup("Sister brands", siblings)}
       ${relGroup("Competitors", competes)}
@@ -351,6 +352,9 @@
           return `<div class="rel-item">${p.label || "Partner"} → <strong>${other}</strong> ${badge}
             ${p.url ? `<br><a href="${p.url}" target="_blank" rel="noopener">source →</a>` : ""}</div>`;
         }).join("")}</div>` : ""}
+      <div class="rel-group"><h4>Recent news</h4>
+        <div id="entNews"><span class="muted" style="font-size:12px">loading recent articles…</span></div>
+      </div>
       <div class="spark"><h4 style="font-size:12px;color:#8598b6">Sentiment trend (from signals)</h4>
         <canvas id="sparkCanvas" height="90"></canvas>
         <p class="muted" style="font-size:11px">${news.length} matched signal(s) in window.</p>
@@ -361,6 +365,7 @@
     const ps = document.getElementById("profStar");
     if (ps) ps.onclick = () => { toggleWatch(e.id); selectEntity(e.id); renderIntel(); };
     drawSpark(news);
+    loadEntityNews(e, news);
   }
 
   function drawSpark(news) {
@@ -385,5 +390,37 @@
   function relGroup(title, arr) {
     if (!arr || !arr.length) return "";
     return `<div class="rel-group"><h4>${title}</h4>${arr.map(x => `<div class="rel-item">${x}</div>`).join("")}</div>`;
+  }
+  function linksRow(e) {
+    const news = `https://news.google.com/search?q=${encodeURIComponent(e.name)}&hl=en-PH&gl=PH`;
+    const li = `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(e.name)}`;
+    const parts = [];
+    if (e.website) parts.push(`<a href="${esc(e.website)}" target="_blank" rel="noopener">Website ↗</a>`);
+    parts.push(`<a href="${news}" target="_blank" rel="noopener">News ↗</a>`);
+    parts.push(`<a href="${li}" target="_blank" rel="noopener">LinkedIn ↗</a>`);
+    return `<div class="kv"><b>Links</b><span>${parts.join(" · ")}</span></div>`;
+  }
+  /* Per-entity recent news: paint feed-matched articles instantly, then augment
+     with a live Google News search for that entity. */
+  async function loadEntityNews(e, seedNews) {
+    const box = document.getElementById("entNews");
+    if (!box) return;
+    const token = ++S.entNewsToken;
+    const tagged = (seedNews || []).map(n => ({ title: n.title, url: n.url, source: n.source || n.domain || "curated", date: n.date }));
+    const render = (list) => {
+      box.innerHTML = list.length
+        ? list.slice(0, 12).map(n => `<div class="rel-item"><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.title)}</a>
+            <br><span class="muted" style="font-size:11px">${esc(n.source || "")}${n.date ? " · " + esc(n.date) : ""}</span></div>`).join("")
+        : `<span class="muted" style="font-size:12px">No recent articles found for ${esc(e.name)}.</span>`;
+    };
+    render(tagged);
+    try {
+      const live = await DATA.fetchEntityNews(e.name);
+      if (token !== S.entNewsToken) return;
+      const seen = new Set();
+      const all = [...live, ...tagged].filter(n => n.url && !seen.has(n.url) && (seen.add(n.url), true));
+      all.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      render(all);
+    } catch (err) { /* keep the instant tagged list */ }
   }
 })();

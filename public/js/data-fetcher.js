@@ -51,6 +51,13 @@ window.DATA = (function () {
     return j.articles || [];
   }
 
+  /* Per-entity recent news via Google News RSS search (proxy). */
+  async function fetchEntityNews(name) {
+    const res = await fetch(`${base}/entity-news?q=${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(11000) });
+    if (!res.ok) throw new Error("entity-news " + res.status);
+    return (await res.json()).articles || [];
+  }
+
   /* Yahoo Finance quote via proxy. symbol e.g. "GC=F", "CL=F", "JFC.PS" */
   async function fetchQuote(symbol) {
     const res = await fetch(`${base}/yahoo?symbol=${encodeURIComponent(symbol)}`);
@@ -78,5 +85,5 @@ window.DATA = (function () {
     return Math.max(-100, Math.min(100, s * 20));
   }
 
-  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchQuote, fetchOwnership, keywordSentiment };
+  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchQuote, fetchOwnership, keywordSentiment };
 })();
