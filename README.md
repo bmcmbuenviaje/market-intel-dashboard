@@ -16,10 +16,13 @@ The Intelligence panel has three tabs:
 - **Whitespace** — the inverse: brands with *no* deal yet whose rival already has one ("open, gettable" leads).
 - **Watchlist** — star any brand (☆) to track it; **Generate digest** pulls each one's latest signal (and can auto-post to Slack/Discord).
 
-The knowledge base ships with **~650 Philippine entities** across 11 categories
-(food, FMCG, gaming, iGaming, beauty, retail, fintech, telco, media, conglomerates,
-regulators) and **~1,140 relationships**: ownership trees, ~65 sourced partnerships,
-and a **direct / indirect / adjacent competitor web** (~585 competitor edges). At this
+The knowledge base ships with **~730 Philippine entities** across 12 categories
+(food, FMCG, gaming, iGaming, beauty, retail, fintech, telco, media, hospitality,
+conglomerates, regulators) and **~1,260 relationships**: ownership trees, sourced
+partnerships, and a **direct / indirect / adjacent competitor web**. iGaming coverage
+is deep (DigiPlus group + BingoPlus/ArenaPlus/GameZone/PeryaGame, PlayTime, OKBet,
+every major casino/integrated resort) and hotels are covered as their own hospitality
+category (Shangri-La, Seda, Go Hotels, Discovery, Peninsula, Megaworld, etc.). At this
 scale the graph is a hairball at "Global/PH" scope — **filter by category or region**
 to get a readable view; the map shows everything. Expand it via `admin.html` or by
 editing `public/data/knowledge-base.json`.

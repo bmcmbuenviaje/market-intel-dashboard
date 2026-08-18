@@ -1,7 +1,7 @@
 {
   "_meta": {
     "note": "Curated relationship intelligence. Ownership edges are high-confidence public knowledge. Partnership edges carry a source URL when available; verified:false means BD must confirm/cite before acting on it. This is REAL sourced data, not mock data. | Expanded via web research across all categories (PH-first), 2026-08-17.",
-    "lastUpdated": "2026-08-17",
+    "lastUpdated": "2026-08-18",
     "maintainers": [
       "BD / Market Intel team"
     ]
@@ -9577,6 +9577,1180 @@
       "ticker": "",
       "website": "",
       "description": "Joint holding vehicle of Metro Pacific Investments Corporation and PLDT Communications and Energy Ventures used to hold their combined stake in Meralco."
+    },
+    {
+      "id": "pba",
+      "name": "Philippine Basketball Association",
+      "aliases": [
+        "PBA"
+      ],
+      "type": "company",
+      "category": "media",
+      "country": "PH",
+      "lat": 14.6,
+      "lng": 121.03,
+      "description": "Asia's first pro basketball league; a premier sponsorship and naming-rights platform for Philippine brands."
+    },
+    {
+      "id": "mpbl",
+      "name": "Maharlika Pilipinas Basketball League",
+      "aliases": [
+        "MPBL"
+      ],
+      "type": "company",
+      "category": "media",
+      "country": "PH",
+      "lat": 14.6,
+      "lng": 121.03,
+      "description": "Commercial regional PH basketball league; growing brand-sponsorship platform."
+    },
+    {
+      "id": "peryagame",
+      "name": "PeryaGame",
+      "aliases": [
+        "Perya Game",
+        "Color Game Perya"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5486,
+      "lng": 121.0509,
+      "ticker": "",
+      "website": "https://digiplus.com.ph/",
+      "description": "DigiPlus Interactive digital brand that digitizes traditional Filipino carnival (\"perya\") games such as Color Game and Pinoy Drop Ball for PAGCOR-regulated online play."
+    },
+    {
+      "id": "spinplus",
+      "name": "SpinPlus",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5486,
+      "lng": 121.0509,
+      "ticker": "",
+      "website": "",
+      "description": "DigiPlus Interactive's dedicated online slot-games platform, positioned alongside BingoPlus, ArenaPlus, GameZone and PeryaGame in the group's digital gaming portfolio."
+    },
+    {
+      "id": "bingo_gallery_inc",
+      "name": "Bingo Gallery, Inc.",
+      "aliases": [],
+      "type": "company",
+      "role": null,
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5486,
+      "lng": 121.0509,
+      "ticker": "",
+      "website": "",
+      "description": "Wholly-owned bingo-operations subsidiary of DigiPlus Interactive Corp., named alongside AB Leisure Exponent and Total Gamezone Xtreme as part of the group's licensed operating entities."
+    },
+    {
+      "id": "blue_chip_gaming_leisure",
+      "name": "Blue Chip Gaming and Leisure Corporation",
+      "aliases": [],
+      "type": "company",
+      "role": null,
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5486,
+      "lng": 121.0509,
+      "ticker": "",
+      "website": "",
+      "description": "Gaming and leisure subsidiary of DigiPlus Interactive Corp. (formerly Leisure & Resorts World Corporation); listed among the group's corporate subsidiaries in investor/company-profile disclosures."
+    },
+    {
+      "id": "diginvest_holdings",
+      "name": "Diginvest Holdings Inc.",
+      "aliases": [],
+      "type": "company",
+      "role": null,
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5486,
+      "lng": 121.0509,
+      "ticker": "",
+      "website": "",
+      "description": "DigiPlus Interactive subsidiary used as the corporate vehicle for the group's international expansion, which incorporated DigiPlus Global Pte. Ltd. in Singapore."
+    },
+    {
+      "id": "digiplus_global_singapore",
+      "name": "DigiPlus Global Pte. Ltd.",
+      "aliases": [],
+      "type": "company",
+      "role": null,
+      "category": "igaming",
+      "country": "SG",
+      "lat": 1.3521,
+      "lng": 103.8198,
+      "ticker": "",
+      "website": "",
+      "description": "Singapore-incorporated holding entity of DigiPlus Interactive (via subsidiary Diginvest Holdings Inc.), set up as part of DigiPlus's international-expansion corporate structure."
+    },
+    {
+      "id": "digiplus_brazil_interactive",
+      "name": "DigiPlus Brazil Interactive Ltda.",
+      "aliases": [],
+      "type": "company",
+      "role": null,
+      "category": "igaming",
+      "country": "BR",
+      "lat": -15.7801,
+      "lng": -47.9292,
+      "ticker": "",
+      "website": "",
+      "description": "DigiPlus Interactive's Brazilian subsidiary, granted definitive authority by the Brazilian government to operate sports betting and other online games; launch vehicle for the group's first international market."
+    },
+    {
+      "id": "gameplus_brazil",
+      "name": "GamePlus",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "BR",
+      "lat": -15.7801,
+      "lng": -47.9292,
+      "ticker": "",
+      "website": "",
+      "description": "DigiPlus Interactive's first international brand, launched in Brazil in September 2025 via DigiPlus Brazil Interactive Ltda. with 150+ locally popular real-money and free-to-play games; BingoPlus is slated to follow into Brazil by 2026. Note: this is DigiPlus's actual Brazil brand name (GamePlus) — no brand called \"PlayGame\" was found in reporting."
+    },
+    {
+      "id": "playtime_ph",
+      "name": "PlayTime",
+      "aliases": [
+        "Playtime GAMING",
+        "Playtime PT"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.2757,
+      "lng": 121.1249,
+      "ticker": "",
+      "website": "https://playtimept.ph/",
+      "description": "PAGCOR-licensed (PIGO) online casino and sportsbook brand operated by Playmate Leisure Solutions Corp. out of Cabuyao City, Laguna, launched 2024 and claiming over 10 million registered Filipino players; a founding member of the PlaySafe Alliance of the Philippines."
+    },
+    {
+      "id": "playmate_leisure_solutions",
+      "name": "Playmate Leisure Solutions Corp.",
+      "aliases": [],
+      "type": "company",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.2757,
+      "lng": 121.1249,
+      "ticker": "",
+      "website": "",
+      "description": "PAGCOR-licensed operating company behind the PlayTime online casino/sportsbook brand, based in Cabuyao City, Laguna."
+    },
+    {
+      "id": "okbet",
+      "name": "OKBet",
+      "aliases": [
+        "OKFun",
+        "OKPlay",
+        "OKGames",
+        "OKDunk",
+        "OKCards",
+        "OKPisoLuck"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5995,
+      "lng": 120.9842,
+      "ticker": "",
+      "website": "https://games.okbet.com/",
+      "description": "PAGCOR-licensed online casino and sportsbook brand operated under Gavin Ventures Inc. as Gaming System Administrator, offering slots (JILI), live-dealer casino (Evolution, Asia Gaming), sportsbook (NBA, PBA) and fishing games; registers several sub-brands (OKFun, OKPlay, OKGames, OKDunk, OKCards, OKPisoLuck) with PAGCOR."
+    },
+    {
+      "id": "gavin_ventures",
+      "name": "Gavin Ventures Inc.",
+      "aliases": [
+        "GVI"
+      ],
+      "type": "company",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5995,
+      "lng": 120.9842,
+      "ticker": "",
+      "website": "",
+      "description": "PAGCOR-accredited Gaming System Administrator (GSA) that owns and operates the OKBet brand and its \"OK\"-root sub-brands and domains; some OKBet materials also reference Kingwin Ventures Inc. in connection with the brand/business name."
+    },
+    {
+      "id": "mwplay888",
+      "name": "MWPlay888",
+      "aliases": [
+        "MWPlay",
+        "MWPlay88"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5995,
+      "lng": 120.9842,
+      "ticker": "",
+      "website": "https://mwplay888ph.com/",
+      "description": "Online casino/sportsbook brand active in the Philippines since 2020 with a large slots and live-dealer library; regulatory status is unclear and inconsistent across its many mirror domains, some of which claim PAGCOR/CEZA licensing while others reference Curacao eGaming or Costa Rican licensing, so treat any PAGCOR-licensed claim as unverified."
+    },
+    {
+      "id": "iest_inc",
+      "name": "Inter-Active Entertainment Solutions Technologies Inc. (IEST)",
+      "aliases": [
+        "IEST Inc.",
+        "Xchangebet",
+        "InstaWin"
+      ],
+      "type": "company",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5764,
+      "lng": 121.0851,
+      "ticker": "",
+      "website": "https://dfnn.com/",
+      "description": "Wholly-owned DFNN, Inc. subsidiary incorporated 2004 that holds PAGCOR licenses (valid to 2033) for Electronic Gaming Machines and the Philippines' only licensed sports-betting exchange, operated under the Xchangebet and InstaWin trademarks."
+    },
+    {
+      "id": "ggpoker_ph",
+      "name": "GGPoker.ph",
+      "aliases": [
+        "GGPoker Philippines"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.6019,
+      "lng": 121.0355,
+      "ticker": "",
+      "website": "https://ggpoker.ph/",
+      "description": "First PAGCOR-licensed real-money online poker brand in the Philippines, launched 2024 and operated locally by Good Games Solutions Pilipinas Inc.; part of the global GGPoker network."
+    },
+    {
+      "id": "good_games_solutions_pilipinas",
+      "name": "Good Games Solutions Pilipinas Inc.",
+      "aliases": [],
+      "type": "company",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.6019,
+      "lng": 121.0355,
+      "ticker": "",
+      "website": "",
+      "description": "San Juan City-registered local entity that holds the PAGCOR license and operates GGPoker.ph, the first regulated real-money online poker room in the Philippines."
+    },
+    {
+      "id": "abacore_capital_holdings",
+      "name": "AbaCore Capital Holdings, Inc.",
+      "aliases": [
+        "AbaCore Capital and Investment Corporation"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5547,
+      "lng": 121.0244,
+      "ticker": "ABA.PS",
+      "website": "https://abacorecapitalholdings.com/",
+      "description": "PSE-listed investment holding company (incorporated 1981, originally a coal-mining firm) that expanded into gaming-equipment leasing in 1993 and co-formed Pacific Online Systems Corporation with partners; also holds real estate, mining and financial-services interests."
+    },
+    {
+      "id": "sportsplus",
+      "name": "SportsPlus",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5764,
+      "lng": 121.0851,
+      "ticker": "",
+      "website": "",
+      "description": "PAGCOR-regulated sportsbook brand (CEO Andre Uy) describing itself as the country's No. 1 sportsbook and Official Gaming Partner of the Philippine Olympic Committee; sealed an official title partnership with the Manny Pacquiao-led Maharlika Pilipinas Basketball League (MPBL) for the 2026 season. Distinct company from DigiPlus's ArenaPlus."
+    },
+    {
+      "id": "sportradar",
+      "name": "Sportradar AG",
+      "aliases": [],
+      "type": "company",
+      "role": "vendor",
+      "category": "igaming",
+      "country": "CH",
+      "lat": 47.4245,
+      "lng": 9.3767,
+      "ticker": "SRAD",
+      "website": "https://www.sportradar.com/",
+      "description": "Global sports-data and integrity-monitoring company; ArenaPlus integrated into its Integrity Exchange in 2026 to bolster match-fixing/fraud detection on its Philippine sportsbook."
+    },
+    {
+      "id": "altenar",
+      "name": "Altenar",
+      "aliases": [],
+      "type": "company",
+      "role": "vendor",
+      "category": "igaming",
+      "country": "MT",
+      "lat": 35.8989,
+      "lng": 14.5146,
+      "ticker": "",
+      "website": "https://altenar.com/",
+      "description": "Turnkey sportsbook technology provider selected by DigiPlus in 2026 to power a new sportsbook setup for ArenaPlus."
+    },
+    {
+      "id": "thunderbird_resorts",
+      "name": "Thunderbird Resorts, Inc.",
+      "aliases": [
+        "Thunderbird Resorts & Casinos"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 16.6167,
+      "lng": 120.3167,
+      "ticker": "",
+      "website": "https://www.thunderbird-asia.com/",
+      "description": "PAGCOR-accredited integrated resort operator running two casino-hotel properties, Thunderbird Resorts Poro Point (La Union) and Thunderbird Resorts Rizal (Binangonan)."
+    },
+    {
+      "id": "waterfront_philippines",
+      "name": "Waterfront Philippines, Incorporated",
+      "aliases": [
+        "WPI",
+        "Waterfront Hotels & Casinos"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 10.3157,
+      "lng": 123.8854,
+      "ticker": "WPI.PS",
+      "website": "https://www.waterfronthotels.com.ph/",
+      "description": "PSE-listed Wellex Group (Gatchalian family) subsidiary that owns the largest Filipino-owned hotel-casino chain, including Waterfront Cebu, Waterfront Davao, Waterfront Airport Hotel and Manila Pavilion."
+    },
+    {
+      "id": "waterfront_cebu_city_hotel_casino",
+      "name": "Waterfront Cebu City Hotel & Casino",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 10.3298,
+      "lng": 123.9019,
+      "ticker": "",
+      "website": "https://www.waterfronthotels.com.ph/waterfront-cebu-city-hotel-casino/",
+      "description": "Flagship 561-room integrated resort in Lahug, Cebu City, opened 1998, hosting a PAGCOR Casino Filipino gaming floor and accounting for the largest share of Waterfront Philippines' revenue."
+    },
+    {
+      "id": "widus_resort_clark",
+      "name": "Widus Hotel and Casino",
+      "aliases": [
+        "Widus Resort Clark"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 15.198,
+      "lng": 120.548,
+      "ticker": "",
+      "website": "https://www.hannresorts.com/hotels/widus-hotel/",
+      "description": "Original hotel-casino brand opened 2008 in Clark Freeport by the Widus Consortium (led by Korean businessman Daesik Han); its casino operation was re-inaugurated in December 2021 as Hann Casino Resort."
+    },
+    {
+      "id": "westside_city_resorts_world",
+      "name": "Westside City Resorts World",
+      "aliases": [
+        "Resorts World Westside City",
+        "Westside Integrated Resort"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5086,
+      "lng": 120.9822,
+      "ticker": "",
+      "website": "",
+      "description": "Under-construction $1.3B integrated resort in Entertainment City, Paranaque with a planned 475-suite hotel and 281-table casino, now targeted for Q3 2026 opening."
+    },
+    {
+      "id": "ph_resorts_group",
+      "name": "PH Resorts Group Holdings, Inc.",
+      "aliases": [
+        "PHR",
+        "formerly Philippine H2O Ventures Corp."
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 14.5995,
+      "lng": 120.9842,
+      "ticker": "PHR.PS",
+      "website": "https://www.phresorts.com/",
+      "description": "PSE-listed Udenna Corporation subsidiary developing the Emerald Bay integrated resort in Mactan, Cebu."
+    },
+    {
+      "id": "emerald_bay_cebu",
+      "name": "Emerald Bay Resort and Casino",
+      "aliases": [
+        "Emerald Bay IR"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 10.3103,
+      "lng": 123.9494,
+      "ticker": "",
+      "website": "",
+      "description": "Long-delayed 12.4-hectare, 642-room integrated resort project in Mactan, Cebu by PH Resorts Group; PAGCOR revoked its provisional gaming licence in December 2025 amid repeated financing setbacks."
+    },
+    {
+      "id": "clark_hotel_stotsenberg",
+      "name": "Hotel Stotsenberg",
+      "aliases": [
+        "Stotsenberg Leisure Park and Hotel Corp.",
+        "Casablanca Casino",
+        "FortuneGate Casino",
+        "Casino Plus Clark"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 15.1729,
+      "lng": 120.548,
+      "ticker": "",
+      "website": "https://stotsenbergclark.com/",
+      "description": "239-room Clark Freeport hotel anchored by the Casino Plus-branded gaming floor (formerly Casablanca Casino), slated for a major five-star expansion."
+    },
+    {
+      "id": "grand_regal_hotel_davao",
+      "name": "Grand Regal Hotel Davao",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "igaming",
+      "country": "PH",
+      "lat": 7.1113,
+      "lng": 125.6499,
+      "ticker": "",
+      "website": "https://thegrandregalhotel.com/",
+      "description": "Pioneer Davao City hospitality property in Lanang that hosts the PAGCOR-run Casino Filipino Davao branch; corporate ownership beyond the hotel operator is unconfirmed."
+    },
+    {
+      "id": "ayala_land_hospitality",
+      "name": "Ayala Land Hospitality",
+      "aliases": [
+        "Ayala Land Hotels and Resorts Corporation",
+        "ALH"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5547,
+      "lng": 121.0244,
+      "ticker": "",
+      "website": "https://ayalalandhospitality.com/",
+      "description": "Ayala Land's hospitality subsidiary that operates the Seda Hotels brand alongside El Nido Resorts and licensed international luxury properties (Raffles/Fairmont Makati)."
+    },
+    {
+      "id": "seda_hotels",
+      "name": "Seda Hotels",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5486,
+      "lng": 121.0508,
+      "ticker": "",
+      "website": "https://www.sedahotels.com/",
+      "description": "Ayala Land Hospitality's homegrown business-hotel brand launched in 2012 with Seda BGC, now spanning around a dozen city and resort properties nationwide."
+    },
+    {
+      "id": "robinsons_hotels_resorts",
+      "name": "Robinsons Hotels and Resorts",
+      "aliases": [
+        "RLC Hotels Division"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5866,
+      "lng": 121.063,
+      "ticker": "",
+      "website": "https://robinsonsland.com/hotels-and-resorts-division",
+      "description": "Robinsons Land Corporation's hospitality division operating Go Hotels, Summit Hotels, Grand Summit, FILI and joint-venture international brands such as Dusit Thani Mactan."
+    },
+    {
+      "id": "summit_hotels_resorts",
+      "name": "Summit Hotels and Resorts",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 10.3157,
+      "lng": 123.8854,
+      "ticker": "",
+      "website": "",
+      "description": "Robinsons Hotels and Resorts' midscale business-hotel brand with properties across Cebu, Tacloban, Tuguegarao and other regional cities."
+    },
+    {
+      "id": "go_hotels",
+      "name": "Go Hotels",
+      "aliases": [
+        "Go Hotels Plus"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5764,
+      "lng": 120.9822,
+      "ticker": "",
+      "website": "https://www.gohotels.ph/",
+      "description": "Robinsons Hotels and Resorts' budget/economy hotel chain positioned against other value-tier operators nationwide."
+    },
+    {
+      "id": "grand_summit_hotels",
+      "name": "Grand Summit Hotels",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 6.1128,
+      "lng": 125.1716,
+      "ticker": "",
+      "website": "",
+      "description": "Robinsons Hotels and Resorts' upscale regional-destination brand, including a hotel within Cebu's NUSTAR Resort and a newly announced property in Panglao, Bohol (groundbreaking 2Q 2026)."
+    },
+    {
+      "id": "fili_hotel",
+      "name": "FILI Hotel",
+      "aliases": [
+        "Fili"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 10.3009,
+      "lng": 123.901,
+      "ticker": "",
+      "website": "",
+      "description": "Robinsons Hotels and Resorts hotel brand operating as one of the three hotel components inside NUSTAR Resort & Casino in Cebu City."
+    },
+    {
+      "id": "dusit_thani_mactan",
+      "name": "Dusit Thani Mactan Cebu Resort",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 10.2922,
+      "lng": 123.9764,
+      "ticker": "",
+      "website": "https://www.dusit.com/dusitthanimactancebu/",
+      "description": "Beach resort in Mactan, Cebu developed and majority-owned by Robinsons Land in a brand-management joint venture with Thailand's Dusit International; ranked among Travel + Leisure's top PH beach resorts in 2026."
+    },
+    {
+      "id": "megaworld_hotels_resorts",
+      "name": "Megaworld Hotels & Resorts",
+      "aliases": [],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5535,
+      "lng": 121.045,
+      "ticker": "",
+      "website": "",
+      "description": "Megaworld Corporation's hospitality arm operating roughly 16 hotels (~7,500 rooms) under the Richmonde, Belmont, Savoy, Kingsford and Lucky Chinatown brands, targeting 9,000 rooms by 2030."
+    },
+    {
+      "id": "richmonde_hotels",
+      "name": "Richmonde Hotels",
+      "aliases": [
+        "Richmonde Hotel Ortigas",
+        "Eastwood Richmonde Hotel"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5866,
+      "lng": 121.063,
+      "ticker": "",
+      "website": "https://www.richmondehotel.com.ph/",
+      "description": "Megaworld Hotels & Resorts' upscale business-hotel brand with flagship properties in Ortigas, Eastwood City and Iloilo."
+    },
+    {
+      "id": "belmont_hotels",
+      "name": "Belmont Hotels",
+      "aliases": [
+        "Belmont Manila",
+        "Belmont Boracay"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.53,
+      "lng": 121.01,
+      "ticker": "",
+      "website": "https://www.belmonthotelmanila.com/",
+      "description": "Megaworld Hotels & Resorts' airport-convenient and leisure-destination brand with hotels in Manila (near NAIA), Boracay and an incoming Iloilo Business Park property."
+    },
+    {
+      "id": "savoy_hotels",
+      "name": "Savoy Hotels",
+      "aliases": [
+        "Savoy Manila",
+        "Savoy Mactan",
+        "Savoy Boracay"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.518,
+      "lng": 121.017,
+      "ticker": "",
+      "website": "",
+      "description": "Megaworld Hotels & Resorts' upper-midscale hotel brand present in Newport City Manila, Mactan and Boracay, with Palawan and Pampanga properties in the pipeline."
+    },
+    {
+      "id": "kingsford_hotel",
+      "name": "The Kingsford Hotel Manila",
+      "aliases": [
+        "Kingsford Bacolod (upcoming)"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.518,
+      "lng": 121.017,
+      "ticker": "",
+      "website": "",
+      "description": "Megaworld Hotels & Resorts' Newport City hotel brand, expanding next into a planned 300-room property in Bacolod's Upper East district."
+    },
+    {
+      "id": "hotel_lucky_chinatown",
+      "name": "Hotel Lucky Chinatown",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.6,
+      "lng": 120.975,
+      "ticker": "",
+      "website": "",
+      "description": "Megaworld Hotels & Resorts property situated within the Lucky Chinatown Mall complex in Binondo, Manila."
+    },
+    {
+      "id": "twin_lakes_hotel",
+      "name": "Twin Lakes Hotel",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.1153,
+      "lng": 120.9621,
+      "ticker": "",
+      "website": "",
+      "description": "Megaworld Hotels & Resorts property inside the Twin Lakes wine-country township development in Tagaytay/Laurel, Batangas."
+    },
+    {
+      "id": "filinvest_hospitality",
+      "name": "Filinvest Hospitality Corporation",
+      "aliases": [
+        "FHC"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.4184,
+      "lng": 121.0295,
+      "ticker": "",
+      "website": "https://filinvesthospitality.com/",
+      "description": "Filinvest Development Corporation's hospitality arm overseeing the Crimson, Quest and Grafik hotel brands, on track to cross 2,000 rooms in 2026."
+    },
+    {
+      "id": "quest_hotels_resorts",
+      "name": "Quest Hotels & Resorts",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 10.3115,
+      "lng": 123.916,
+      "ticker": "",
+      "website": "",
+      "description": "Filinvest Hospitality's MICE-oriented mid-tier hotel brand with properties in Cebu, Clark and Tagaytay."
+    },
+    {
+      "id": "grafik_hotel_collection",
+      "name": "Grafik Hotel Collection",
+      "aliases": [
+        "Grafik Pine House"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 16.4023,
+      "lng": 120.596,
+      "ticker": "",
+      "website": "",
+      "description": "Filinvest Hospitality's newest lifestyle-boutique brand, launching with the 256-room Grafik Pine House in Baguio ahead of planned Cebu and Negros Occidental openings."
+    },
+    {
+      "id": "sm_hotels_conventions",
+      "name": "SM Hotels and Conventions Corp.",
+      "aliases": [
+        "SMHCC"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5352,
+      "lng": 120.9822,
+      "ticker": "",
+      "website": "https://smhotels.com.ph/",
+      "description": "SM Prime Holdings' hospitality and convention-center arm, running a ten-property, 2,601-room portfolio including Conrad Manila, Radisson Blu Cebu and the Park Inn by Radisson chain."
+    },
+    {
+      "id": "conrad_manila",
+      "name": "Conrad Manila",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5333,
+      "lng": 120.9822,
+      "ticker": "",
+      "website": "https://www.conradmanila.com/",
+      "description": "SM Hotels and Conventions' luxury flagship, opened 2016 atop the S Maison retail complex in the Mall of Asia Complex, operated under Hilton's Conrad brand."
+    },
+    {
+      "id": "radisson_blu_cebu",
+      "name": "Radisson Blu Cebu",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 10.3115,
+      "lng": 123.9053,
+      "ticker": "",
+      "website": "https://smhotels.com.ph/hotels/radisson-blu-cebu/",
+      "description": "SM Hotels and Conventions property beside SM City Cebu, branded through a Radisson Hotel Group licensing tie-up."
+    },
+    {
+      "id": "park_inn_by_radisson_ph",
+      "name": "Park Inn by Radisson (Philippines)",
+      "aliases": [
+        "Park Inn Bacolod",
+        "Park Inn Clark",
+        "Park Inn Davao",
+        "Park Inn Iloilo",
+        "Park Inn North EDSA"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 15.1855,
+      "lng": 120.56,
+      "ticker": "",
+      "website": "",
+      "description": "SM Hotels and Conventions' midscale chain of Radisson-branded properties in Bacolod, Clark, Davao, Iloilo and North EDSA, part of a multi-hotel Radisson Hotel Group signing."
+    },
+    {
+      "id": "pico_sands_hotel",
+      "name": "Pico Sands Hotel",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.0725,
+      "lng": 120.6309,
+      "ticker": "",
+      "website": "",
+      "description": "SM Hotels and Conventions' boutique beach property in Nasugbu, Batangas."
+    },
+    {
+      "id": "taal_vista_hotel",
+      "name": "Taal Vista Hotel",
+      "aliases": [
+        "Taal Vista Lodge"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.1027,
+      "lng": 120.9377,
+      "ticker": "",
+      "website": "",
+      "description": "SM Hotels and Conventions' historic ridge-top hotel overlooking Taal Volcano in Tagaytay."
+    },
+    {
+      "id": "discovery_hospitality",
+      "name": "Discovery Hospitality Corporation",
+      "aliases": [
+        "DHC"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5626,
+      "lng": 121.0296,
+      "ticker": "",
+      "website": "https://www.discoveryhotels-resorts.com/",
+      "description": "Independent Philippine hospitality group operating the Discovery Primea, Discovery Shores Boracay, Discovery Suites, Discovery Samal and Club Paradise Palawan properties."
+    },
+    {
+      "id": "discovery_primea",
+      "name": "Discovery Primea",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5626,
+      "lng": 121.0296,
+      "ticker": "",
+      "website": "https://www.discoveryprimea.com/",
+      "description": "Discovery Hospitality's luxury business hotel in Makati, repeatedly recognized as Asia's Leading Business Hotel."
+    },
+    {
+      "id": "discovery_shores_boracay",
+      "name": "Discovery Shores Boracay",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 11.9683,
+      "lng": 121.9226,
+      "ticker": "",
+      "website": "https://www.discoveryshoresboracay.com/",
+      "description": "Discovery Hospitality's all-suite beachfront resort on Station 1, Boracay, a repeat Conde Nast Johansens award winner."
+    },
+    {
+      "id": "discovery_suites",
+      "name": "Discovery Suites",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5866,
+      "lng": 121.063,
+      "ticker": "",
+      "website": "",
+      "description": "Discovery Hospitality's serviced-apartment-style hotel in Ortigas Center, Pasig, open since 2000."
+    },
+    {
+      "id": "discovery_samal",
+      "name": "Discovery Samal",
+      "aliases": [
+        "Manami Resort"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 7.0912,
+      "lng": 125.7189,
+      "ticker": "",
+      "website": "",
+      "description": "Discovery Hospitality's 162-villa resort on Samal Island overlooking the Davao Gulf, added to the portfolio in 2021."
+    },
+    {
+      "id": "shangrila_hotels_ph",
+      "name": "Shangri-La Hotels (Philippines)",
+      "aliases": [
+        "Shangri-La Asia - Philippine portfolio"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5547,
+      "lng": 121.0244,
+      "ticker": "",
+      "website": "https://www.shangri-la.com/",
+      "description": "Philippine operating arm of Hong Kong-listed Shangri-La Asia, running five luxury hotels across Metro Manila and beach destinations."
+    },
+    {
+      "id": "makati_shangrila",
+      "name": "Makati Shangri-La, Manila",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5578,
+      "lng": 121.0198,
+      "ticker": "",
+      "website": "https://www.shangri-la.com/manila/makatishangrila/",
+      "description": "692-room luxury flagship opened 1993 in Makati's financial district."
+    },
+    {
+      "id": "edsa_shangrila",
+      "name": "EDSA Shangri-La, Manila",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5794,
+      "lng": 121.0359,
+      "ticker": "",
+      "website": "https://www.shangri-la.com/manila/edsashangrila/",
+      "description": "The chain's first Philippine hotel, opened 1992 in Ortigas Center, Mandaluyong."
+    },
+    {
+      "id": "shangrila_the_fort",
+      "name": "Shangri-La at the Fort, Manila",
+      "aliases": [
+        "Shangri-La The Fort BGC"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.549,
+      "lng": 121.0518,
+      "ticker": "",
+      "website": "https://www.shangri-la.com/manila/shangrilaatthefort/",
+      "description": "530-room luxury tower opened 2016 in Bonifacio Global City, Taguig."
+    },
+    {
+      "id": "shangrila_mactan",
+      "name": "Shangri-La Mactan Resort and Spa",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 10.2758,
+      "lng": 123.9836,
+      "ticker": "",
+      "website": "",
+      "description": "Beach resort in Mactan, Cebu, one of the group's first Philippine leisure properties."
+    },
+    {
+      "id": "shangrila_boracay",
+      "name": "Shangri-La Boracay Resort and Spa",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 11.9917,
+      "lng": 121.9219,
+      "ticker": "",
+      "website": "",
+      "description": "Luxury beach resort on Boracay's Punta Bunga, opened March 2009."
+    },
+    {
+      "id": "peninsula_manila",
+      "name": "The Peninsula Manila",
+      "aliases": [],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5578,
+      "lng": 121.0195,
+      "ticker": "",
+      "website": "https://www.peninsula.com/en/manila",
+      "description": "5-star Makati luxury hotel opened 1976, owned by Hong Kong-listed The Hongkong and Shanghai Hotels, Limited (Kadoorie family); the chain's first property outside Hong Kong."
+    },
+    {
+      "id": "manila_hotel",
+      "name": "Manila Hotel",
+      "aliases": [
+        "Manila Prince Hotel Corporation"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5904,
+      "lng": 120.9752,
+      "ticker": "",
+      "website": "https://www.manila-hotel.com.ph/",
+      "description": "Historic 1912 landmark hotel on Manila Bay majority-owned since 1995 by the late Emilio Yap's Manila Prince Hotel Corporation, part of the Yap family business group that also controls the Manila Bulletin."
+    },
+    {
+      "id": "diamond_hotel_manila",
+      "name": "Diamond Hotel Philippines",
+      "aliases": [
+        "Diamond Hotel Manila"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5745,
+      "lng": 120.9799,
+      "ticker": "",
+      "website": "https://diamondhotel.com/",
+      "description": "5-star hotel on Roxas Boulevard, Manila; current corporate ownership structure could not be independently confirmed from public sources."
+    },
+    {
+      "id": "dusit_thani_manila",
+      "name": "Dusit Thani Manila",
+      "aliases": [
+        "Philippine Hoteliers, Inc."
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5573,
+      "lng": 121.0193,
+      "ticker": "",
+      "website": "",
+      "description": "Makati luxury hotel acquired by Thailand's Dusit International in 1995 and rebranded in 2008; reported to be closing as its Ayala Land ground lease nears expiry, with the site reverting to Ayala."
+    },
+    {
+      "id": "marco_polo_hotels_ph",
+      "name": "Marco Polo Hotels (Philippines)",
+      "aliases": [
+        "Marco Polo Plaza Cebu",
+        "Marco Polo Davao",
+        "Marco Polo Ortigas Manila"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 10.34,
+      "lng": 123.908,
+      "ticker": "",
+      "website": "https://www.marcopolohotels.com/",
+      "description": "Philippine portfolio (Cebu, Davao, Ortigas Manila) of Marco Polo Hotels, a wholly-owned brand of Hong Kong-listed The Wharf (Holdings) Limited."
+    },
+    {
+      "id": "bellevue_hotels",
+      "name": "The Bellevue Hotels and Resorts",
+      "aliases": [
+        "BH&R"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.4185,
+      "lng": 121.043,
+      "ticker": "",
+      "website": "https://www.thebellevue.com/",
+      "description": "Filipino-owned hotel group chaired by the Chan family, operating The Bellevue Manila, The Bellevue Resort (Panglao, Bohol) and related properties."
+    },
+    {
+      "id": "bluewater_resorts",
+      "name": "Bluewater Resorts",
+      "aliases": [
+        "Bluewater Maribago Beach Resort",
+        "Bluewater Sumilon Island Resort",
+        "Bluewater Panglao Beach Resort"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 10.2853,
+      "lng": 124.0089,
+      "ticker": "",
+      "website": "https://shopblue.com.ph/",
+      "description": "Beach resort chain in the Visayas (Mactan, Sumilon Island, Panglao) operated and managed by Alenter Resort Hotels Corp."
+    },
+    {
+      "id": "century_park_hotel",
+      "name": "Century Park Hotel",
+      "aliases": [
+        "Century Park Manila"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5675,
+      "lng": 120.984,
+      "ticker": "",
+      "website": "",
+      "description": "Malate, Manila hotel owned by Mara Naw Hotels and Resort Corp., a subsidiary of Lucio Tan's LT Group."
+    },
+    {
+      "id": "red_planet_hotels_ph",
+      "name": "Red Planet Hotels (Philippines)",
+      "aliases": [
+        "Red Planet Hospitality"
+      ],
+      "type": "company",
+      "role": "parent",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.5776,
+      "lng": 120.9822,
+      "ticker": "",
+      "website": "https://www.redplanethospitality.com/",
+      "description": "Japanese-owned budget hotel chain (under Tokyo-listed Polaris Holdings, formerly Red Planet Japan) with roughly 14 properties across Metro Manila, Angeles, Cebu, Davao and Cagayan de Oro."
+    },
+    {
+      "id": "sofitel_philippine_plaza",
+      "name": "Sofitel Philippine Plaza Manila",
+      "aliases": [
+        "Philippine Plaza Hotel",
+        "Sofitel Manila"
+      ],
+      "type": "brand",
+      "role": "operator",
+      "category": "hospitality",
+      "country": "PH",
+      "lat": 14.551,
+      "lng": 120.98,
+      "ticker": "",
+      "website": "",
+      "description": "51-year-old CCP Complex landmark (Leandro Locsin design) operated under Accor's Sofitel brand by Philippine Plaza Holdings Inc.; permanently ceased operations July 1, 2024 citing building safety issues."
     }
   ],
   "relationships": [
@@ -16308,6 +17482,716 @@
     {
       "source": "doubledragon",
       "target": "alliance_global",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "peryagame",
+      "type": "owns"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "spinplus",
+      "type": "owns"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "bingo_gallery_inc",
+      "type": "owns"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "blue_chip_gaming_leisure",
+      "type": "owns"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "diginvest_holdings",
+      "type": "owns"
+    },
+    {
+      "source": "diginvest_holdings",
+      "target": "digiplus_global_singapore",
+      "type": "owns"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "digiplus_brazil_interactive",
+      "type": "owns"
+    },
+    {
+      "source": "digiplus_brazil_interactive",
+      "target": "gameplus_brazil",
+      "type": "owns"
+    },
+    {
+      "source": "playmate_leisure_solutions",
+      "target": "playtime_ph",
+      "type": "owns"
+    },
+    {
+      "source": "gavin_ventures",
+      "target": "okbet",
+      "type": "owns"
+    },
+    {
+      "source": "good_games_solutions_pilipinas",
+      "target": "ggpoker_ph",
+      "type": "owns"
+    },
+    {
+      "source": "dfnn_inc",
+      "target": "iest_inc",
+      "type": "owns"
+    },
+    {
+      "source": "abacore_capital_holdings",
+      "target": "pacific_online_systems",
+      "type": "owns",
+      "label": "co-founding investor, formed 1993 as gaming-equipment leasing partner",
+      "verified": true
+    },
+    {
+      "source": "pagcor",
+      "target": "peryagame",
+      "type": "regulates",
+      "label": "domestic online gaming license"
+    },
+    {
+      "source": "pagcor",
+      "target": "spinplus",
+      "type": "regulates",
+      "label": "domestic online gaming license"
+    },
+    {
+      "source": "pagcor",
+      "target": "playtime_ph",
+      "type": "regulates",
+      "label": "PIGO license"
+    },
+    {
+      "source": "pagcor",
+      "target": "okbet",
+      "type": "regulates",
+      "label": "PIGO license via Gavin Ventures Inc."
+    },
+    {
+      "source": "pagcor",
+      "target": "mwplay888",
+      "type": "regulates",
+      "label": "claimed PAGCOR/CEZA license; some mirror domains instead cite Curacao/Costa Rica licensing, so status is unconfirmed",
+      "verified": false
+    },
+    {
+      "source": "pagcor",
+      "target": "iest_inc",
+      "type": "regulates",
+      "label": "EGM, sports-betting-exchange and pari-mutuel licenses (valid to 2033)"
+    },
+    {
+      "source": "pagcor",
+      "target": "ggpoker_ph",
+      "type": "regulates",
+      "label": "first licensed real-money online poker room"
+    },
+    {
+      "source": "pagcor",
+      "target": "sportsplus",
+      "type": "regulates",
+      "label": "licensed sportsbook, supervised jointly with GAB"
+    },
+    {
+      "source": "ceza",
+      "target": "mwplay888",
+      "type": "regulates",
+      "label": "alternative claimed licensing route referenced on some MWPlay888 domains",
+      "verified": false
+    },
+    {
+      "source": "arenaplus",
+      "target": "sportradar",
+      "type": "partner",
+      "label": "Integrated ArenaPlus into Sportradar's Integrity Exchange for match-fixing/fraud monitoring",
+      "url": "https://www.ggrasia.com/digiplus-strengthens-arenaplus-integrity-via-sportradar-partnership",
+      "verified": true,
+      "date": "2026-05"
+    },
+    {
+      "source": "arenaplus",
+      "target": "altenar",
+      "type": "partner",
+      "label": "Selected Altenar as sportsbook technology provider for a new ArenaPlus setup",
+      "url": "https://hipther.com/gaming-and-entertainment-europe/2026/05/21/112070/philippine-sportsbook-arenaplus-selects-altenar-as-technology-provider/",
+      "verified": true,
+      "date": "2026-05"
+    },
+    {
+      "source": "arenaplus",
+      "target": "pba",
+      "type": "partner",
+      "label": "Official Sports Entertainment Gateway of the PBA (multi-year deal, first signed April 2023, extended August 2024); PBA entity not yet defined in KB — dangling reference, flagged for sports/media slice",
+      "url": "https://businessmirror.com.ph/2023/04/13/arenaplus-sign-deal-with-pba/",
+      "verified": true,
+      "date": "2023-04"
+    },
+    {
+      "source": "bingoplus",
+      "target": "pba",
+      "type": "partner",
+      "label": "Official bingo sponsorship deal with the PBA (Season 47); PBA entity not yet defined in KB — dangling reference, flagged for sports/media slice",
+      "url": "https://pba.ph/news/pba-signs-sponsorship-deal-with-bingoplus",
+      "verified": true
+    },
+    {
+      "source": "sportsplus",
+      "target": "mpbl",
+      "type": "partner",
+      "label": "Official title partnership for the 2026 MPBL season (contract signing with Manny Pacquiao, Feb 23 2026); MPBL entity not yet defined in KB — dangling reference, flagged for sports/media slice",
+      "url": "https://journalnews.com.ph/mpbl-sportsplus-seal-title-partnership-for-2026/",
+      "verified": true,
+      "date": "2026-02-23"
+    },
+    {
+      "source": "bingoplus",
+      "target": "peryagame",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "bingoplus",
+      "target": "gamezone",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "gamezone",
+      "target": "peryagame",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "bingoplus",
+      "target": "playtime_ph",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "bingoplus",
+      "target": "okbet",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "peryagame",
+      "target": "playtime_ph",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "peryagame",
+      "target": "okbet",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "playtime_ph",
+      "target": "okbet",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "okbet",
+      "target": "mwplay888",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "playtime_ph",
+      "target": "mwplay888",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "spinplus",
+      "target": "gamezone",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "arenaplus",
+      "target": "sportsplus",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "megasportsworld",
+      "target": "sportsplus",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "ggpoker_ph",
+      "target": "philweb_corporation",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "bingoplus",
+      "target": "arenaplus",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "okbet",
+      "target": "arenaplus",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "peryagame",
+      "target": "arenaplus",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "ggpoker_ph",
+      "target": "okbet",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "iest_inc",
+      "target": "arenaplus",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "iest_inc",
+      "target": "pacific_online_systems",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "solaire",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "okada_manila",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "okbet",
+      "target": "pogo_offshore_gaming",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "mwplay888",
+      "target": "pogo_offshore_gaming",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "digiplus_interactive",
+      "target": "pogo_offshore_gaming",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "waterfront_philippines",
+      "target": "waterfront_cebu_city_hotel_casino",
+      "type": "owns"
+    },
+    {
+      "source": "casino_filipino",
+      "target": "waterfront_cebu_city_hotel_casino",
+      "type": "partner",
+      "label": "Casino Filipino Cebu operates its gaming floor inside this Waterfront Philippines property",
+      "url": "https://www.clickthecity.com/local/b/Is57301/pagcor-casino-filipino-cebu-casino-filipino",
+      "verified": true,
+      "date": ""
+    },
+    {
+      "source": "casino_filipino",
+      "target": "grand_regal_hotel_davao",
+      "type": "partner",
+      "label": "Casino Filipino Davao operates its gaming floor inside Grand Regal Hotel Davao",
+      "url": "https://www.facebook.com/cfdavao/",
+      "verified": true,
+      "date": ""
+    },
+    {
+      "source": "widus_resort_clark",
+      "target": "hann_casino_resort",
+      "type": "partner",
+      "label": "Both part of the Widus Consortium (Daesik Han/Hann Development Corp.); Hann Casino Resort is the December 2021 rebrand of the original Widus Hotel and Casino",
+      "url": "https://www.hannresorts.com/stories/thegamechangers-daesikhan/",
+      "verified": true,
+      "date": "2021-12-15"
+    },
+    {
+      "source": "travellers_intl",
+      "target": "westside_city_resorts_world",
+      "type": "owns"
+    },
+    {
+      "source": "suntrust_properties",
+      "target": "westside_city_resorts_world",
+      "type": "partner",
+      "label": "Travellers International and Suntrust Resort Holdings committing up to $450M to complete the project after Travellers took over the lead role from Suntrust in 2025",
+      "url": "https://www.forbes.com/sites/iansayson/2025/09/01/billionaire-andrew-tans-travellers-taking-over-13-billion-philippine-casino-project-from-suntrust/",
+      "verified": true,
+      "date": "2025-09-01"
+    },
+    {
+      "source": "megaworld",
+      "target": "westside_city_resorts_world",
+      "type": "partner",
+      "label": "Megaworld co-develops the broader 31-hectare Westside City township surrounding the Travellers-led casino resort",
+      "url": "https://news.worldcasinodirectory.com/suncity-group-inks-operations-deal-for-coming-resorts-world-westside-city-72897",
+      "verified": false,
+      "date": ""
+    },
+    {
+      "source": "udenna",
+      "target": "ph_resorts_group",
+      "type": "owns"
+    },
+    {
+      "source": "ph_resorts_group",
+      "target": "emerald_bay_cebu",
+      "type": "owns"
+    },
+    {
+      "source": "ayala_land",
+      "target": "ayala_land_hospitality",
+      "type": "owns"
+    },
+    {
+      "source": "ayala_land_hospitality",
+      "target": "seda_hotels",
+      "type": "owns"
+    },
+    {
+      "source": "robinsons_land",
+      "target": "robinsons_hotels_resorts",
+      "type": "owns"
+    },
+    {
+      "source": "robinsons_hotels_resorts",
+      "target": "summit_hotels_resorts",
+      "type": "owns"
+    },
+    {
+      "source": "robinsons_hotels_resorts",
+      "target": "go_hotels",
+      "type": "owns"
+    },
+    {
+      "source": "robinsons_hotels_resorts",
+      "target": "grand_summit_hotels",
+      "type": "owns"
+    },
+    {
+      "source": "robinsons_hotels_resorts",
+      "target": "fili_hotel",
+      "type": "owns"
+    },
+    {
+      "source": "robinsons_hotels_resorts",
+      "target": "dusit_thani_mactan",
+      "type": "owns"
+    },
+    {
+      "source": "robinsons_hotels_resorts",
+      "target": "nustar_resort_casino",
+      "type": "partner",
+      "label": "FILI and Grand Summit are Robinsons-operated hotel brands housed within NUSTAR Resort & Casino, Cebu",
+      "url": "https://www.jgsummit.com.ph/impact/robinsons-land-s-dusit-thani-mactan-among-travel-leisure-s-best-ph-resorts-20260721",
+      "verified": true,
+      "date": ""
+    },
+    {
+      "source": "megaworld",
+      "target": "megaworld_hotels_resorts",
+      "type": "owns"
+    },
+    {
+      "source": "megaworld_hotels_resorts",
+      "target": "richmonde_hotels",
+      "type": "owns"
+    },
+    {
+      "source": "megaworld_hotels_resorts",
+      "target": "belmont_hotels",
+      "type": "owns"
+    },
+    {
+      "source": "megaworld_hotels_resorts",
+      "target": "savoy_hotels",
+      "type": "owns"
+    },
+    {
+      "source": "megaworld_hotels_resorts",
+      "target": "kingsford_hotel",
+      "type": "owns"
+    },
+    {
+      "source": "megaworld_hotels_resorts",
+      "target": "hotel_lucky_chinatown",
+      "type": "owns"
+    },
+    {
+      "source": "megaworld_hotels_resorts",
+      "target": "twin_lakes_hotel",
+      "type": "owns"
+    },
+    {
+      "source": "filinvest_group",
+      "target": "filinvest_hospitality",
+      "type": "owns"
+    },
+    {
+      "source": "filinvest_hospitality",
+      "target": "crimson_hotels",
+      "type": "owns"
+    },
+    {
+      "source": "filinvest_hospitality",
+      "target": "quest_hotels_resorts",
+      "type": "owns"
+    },
+    {
+      "source": "filinvest_hospitality",
+      "target": "grafik_hotel_collection",
+      "type": "owns"
+    },
+    {
+      "source": "sm_prime",
+      "target": "sm_hotels_conventions",
+      "type": "owns"
+    },
+    {
+      "source": "sm_hotels_conventions",
+      "target": "conrad_manila",
+      "type": "owns"
+    },
+    {
+      "source": "sm_hotels_conventions",
+      "target": "radisson_blu_cebu",
+      "type": "owns"
+    },
+    {
+      "source": "sm_hotels_conventions",
+      "target": "park_inn_by_radisson_ph",
+      "type": "owns"
+    },
+    {
+      "source": "sm_hotels_conventions",
+      "target": "pico_sands_hotel",
+      "type": "owns"
+    },
+    {
+      "source": "sm_hotels_conventions",
+      "target": "taal_vista_hotel",
+      "type": "owns"
+    },
+    {
+      "source": "discovery_hospitality",
+      "target": "discovery_primea",
+      "type": "owns"
+    },
+    {
+      "source": "discovery_hospitality",
+      "target": "discovery_shores_boracay",
+      "type": "owns"
+    },
+    {
+      "source": "discovery_hospitality",
+      "target": "discovery_suites",
+      "type": "owns"
+    },
+    {
+      "source": "discovery_hospitality",
+      "target": "discovery_samal",
+      "type": "owns"
+    },
+    {
+      "source": "shangrila_hotels_ph",
+      "target": "makati_shangrila",
+      "type": "owns"
+    },
+    {
+      "source": "shangrila_hotels_ph",
+      "target": "edsa_shangrila",
+      "type": "owns"
+    },
+    {
+      "source": "shangrila_hotels_ph",
+      "target": "shangrila_the_fort",
+      "type": "owns"
+    },
+    {
+      "source": "shangrila_hotels_ph",
+      "target": "shangrila_mactan",
+      "type": "owns"
+    },
+    {
+      "source": "shangrila_hotels_ph",
+      "target": "shangrila_boracay",
+      "type": "owns"
+    },
+    {
+      "source": "lt_group",
+      "target": "century_park_hotel",
+      "type": "owns"
+    },
+    {
+      "source": "manila_hotel",
+      "target": "manila_bulletin",
+      "type": "partner",
+      "label": "Both historically controlled by the late Emilio Yap and the Yap family business group",
+      "url": "https://bilyonaryo.com/2020/01/05/family-of-don-emilio-yap-ready-to-cash-in-top-investment-banker-going-around-gauging-interest-in-manila-hotel-bulletin-philtrust/",
+      "verified": true,
+      "date": ""
+    },
+    {
+      "source": "dusit_thani_manila",
+      "target": "ayala_land",
+      "type": "partner",
+      "label": "Hotel sits on an Ayala Land ground lease reportedly expiring, with land reverting to Ayala as the hotel closes",
+      "url": "https://en.wikipedia.org/wiki/Dusit_Thani_Manila",
+      "verified": false,
+      "date": ""
+    },
+    {
+      "source": "seda_hotels",
+      "target": "summit_hotels_resorts",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "seda_hotels",
+      "target": "richmonde_hotels",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "summit_hotels_resorts",
+      "target": "richmonde_hotels",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "shangrila_hotels_ph",
+      "target": "peninsula_manila",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "peninsula_manila",
+      "target": "discovery_primea",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "shangrila_hotels_ph",
+      "target": "discovery_primea",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "go_hotels",
+      "target": "red_planet_hotels_ph",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "seda_hotels",
+      "target": "discovery_shores_boracay",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "robinsons_hotels_resorts",
+      "target": "bluewater_resorts",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "solaire",
+      "target": "peninsula_manila",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "city_of_dreams_manila",
+      "target": "manila_hotel",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "go_hotels",
+      "target": "hotel101_global",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "seda_hotels",
+      "target": "hotel101_global",
+      "type": "competitor",
+      "label": "adjacent"
+    },
+    {
+      "source": "hann_casino_resort",
+      "target": "clark_hotel_stotsenberg",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "nustar_resort_casino",
+      "target": "emerald_bay_cebu",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "waterfront_cebu_city_hotel_casino",
+      "target": "nustar_resort_casino",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "westside_city_resorts_world",
+      "target": "solaire",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "westside_city_resorts_world",
+      "target": "okada_manila",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "westside_city_resorts_world",
+      "target": "city_of_dreams_manila",
+      "type": "competitor",
+      "label": "direct"
+    },
+    {
+      "source": "thunderbird_resorts",
+      "target": "waterfront_cebu_city_hotel_casino",
+      "type": "competitor",
+      "label": "indirect"
+    },
+    {
+      "source": "grand_regal_hotel_davao",
+      "target": "nustar_resort_casino",
       "type": "competitor",
       "label": "adjacent"
     }
