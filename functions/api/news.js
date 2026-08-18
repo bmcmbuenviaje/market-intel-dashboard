@@ -56,7 +56,7 @@ function parseFeed(xml, source) {
   const blocks = xml.match(/<(item|entry)\b[\s\S]*?<\/(item|entry)>/gi) || [];
   for (const b of blocks) {
     const title = clean(tag(b, "title"));
-    let link = (tag(b, "link") || "").trim();
+    let link = stripCdata(tag(b, "link")).trim();
     if (!link) { const m = b.match(/<link[^>]*href=["']([^"']+)["']/i); if (m) link = m[1]; }
     const rawDate = tag(b, "pubDate") || tag(b, "published") || tag(b, "updated") || tag(b, "dc:date");
     const ts = rawDate ? Date.parse(rawDate) : NaN;
@@ -73,6 +73,7 @@ function tag(block, name) {
   const m = block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`, "i"));
   return m ? m[1] : "";
 }
+function stripCdata(s) { return String(s || "").replace(/<!\[CDATA\[|\]\]>/g, "").replace(/&amp;/g, "&"); }
 function clean(s) {
   return String(s || "")
     .replace(/<!\[CDATA\[|\]\]>/g, "")

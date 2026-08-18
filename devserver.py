@@ -250,7 +250,7 @@ def _parse_feed(xml, source):
     import datetime
     for b in re.findall(r"<(?:item|entry)\b[\s\S]*?</(?:item|entry)>", xml, re.I):
         title = _clean(_tag(b, "title"))
-        link = (_tag(b, "link") or "").strip()
+        link = re.sub(r"<!\[CDATA\[|\]\]>", "", _tag(b, "link") or "").replace("&amp;", "&").strip()
         if not link:
             m = re.search(r"<link[^>]*href=[\"']([^\"']+)[\"']", b, re.I)
             if m:
