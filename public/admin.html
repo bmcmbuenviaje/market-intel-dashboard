@@ -6,24 +6,47 @@
   <title>Admin · Market Intel</title>
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    .wrap { max-width: 900px; margin: 0 auto; padding: 24px; }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
-    .card h2 { margin: 0 0 4px; font-size: 16px; }
-    .card p.sub { color: var(--muted); margin: 0 0 14px; font-size: 13px; }
-    .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 12px; }
-    .row:last-child { border-bottom: 0; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .abar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .abar h1 { margin: 0; font-size: 18px; }
+    .abar .grow { flex: 1; }
     .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
     .pill.ok { color: var(--good); border-color: var(--good); }
     .pill.err { color: var(--bad); border-color: var(--bad); }
-    input[type=text], textarea, select { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px; width: 100%; font: inherit; }
-    label.fld { display: block; margin: 8px 0; font-size: 12px; color: var(--muted); }
-    switch { }
+    .pill.warn { color: var(--warn); border-color: var(--warn); }
+    .dirty { color: var(--warn); font-weight: 600; }
+    .tabs { display: flex; gap: 4px; margin: 12px 0; flex-wrap: wrap; }
+    .tab { background: var(--panel-2); border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .tab.active { background: var(--accent); color: #04121f; font-weight: 600; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    input[type=text], input[type=number], input[type=password], textarea, select {
+      background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; font: inherit; }
+    input[type=text], input[type=password] { min-width: 160px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); font-weight: 500; position: sticky; top: 0; background: var(--panel); }
+    .tablewrap { max-height: 60vh; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+    .rowbtn { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 11px; }
+    .rowbtn.del { color: var(--bad); border-color: var(--bad); }
+    .count { color: var(--muted); font-size: 12px; }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; place-items: center; z-index: 500; }
+    .modal.open { display: grid; }
+    .card2 { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; width: min(560px, 94vw); max-height: 90vh; overflow: auto; }
+    .card2 h3 { margin: 0 0 10px; }
+    .fld { display: block; margin: 8px 0; font-size: 12px; color: var(--muted); }
+    .fld input, .fld textarea, .fld select { width: 100%; margin-top: 3px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+    .note { background: rgba(56,189,248,.08); border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px; font-size: 12px; color: var(--muted); margin: 8px 0; }
+    .note.warn { background: rgba(245,158,11,.1); border-color: var(--warn); color: #fcd9a0; }
+    .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 12px; }
     .toggle { width: 42px; height: 24px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); position: relative; cursor: pointer; }
     .toggle.on { background: var(--accent); }
     .toggle span { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: .15s; }
     .toggle.on span { left: 20px; }
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .note { background: rgba(245,158,11,.1); border: 1px solid var(--warn); color: #fcd9a0; padding: 10px 12px; border-radius: 8px; font-size: 12px; }
+    code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -39,77 +62,150 @@
 
   <div id="app" class="hidden">
     <div class="wrap">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <h1 style="margin:0">⚙️ Admin Panel</h1>
+      <div class="abar">
+        <h1>⚙️ Admin</h1>
+        <span class="pill" id="srcPill">loading…</span>
+        <span class="count" id="counts"></span>
+        <span id="dirty" class="dirty hidden">● unsaved changes</span>
+        <span class="grow"></span>
+        <input id="adminToken" type="password" placeholder="Admin token (to save)" title="Must match ADMIN_TOKEN env var on Cloudflare" />
+        <button class="btn" id="btnSave">💾 Save to server</button>
         <a href="index.html" class="btn ghost">← Dashboard</a>
       </div>
 
-      <div class="card">
-        <h2>Data sources</h2>
-        <p class="sub">Toggle which live feeds the dashboard queries. Saved to this browser.</p>
+      <div class="tabs">
+        <button class="tab active" data-sec="entities">Companies &amp; Brands</button>
+        <button class="tab" data-sec="connections">Connections</button>
+        <button class="tab" data-sec="io">Import / Export</button>
+        <button class="tab" data-sec="settings">Settings &amp; APIs</button>
+      </div>
+
+      <!-- ENTITIES -->
+      <section class="section active" id="sec-entities">
+        <div class="toolbar">
+          <input id="eSearch" type="text" placeholder="Search name / id / alias…" />
+          <select id="eCatFilter"><option value="">All categories</option></select>
+          <button class="btn" id="eAdd">+ Add company / brand</button>
+          <span class="count" id="eCount"></span>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Name</th><th>Category</th><th>Type</th><th>Parent</th><th>Country</th><th></th></tr></thead>
+            <tbody id="eRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CONNECTIONS -->
+      <section class="section" id="sec-connections">
+        <div class="toolbar">
+          <input id="rSearch" type="text" placeholder="Search by entity name…" />
+          <select id="rTypeFilter">
+            <option value="">All types</option><option value="owns">owns</option>
+            <option value="partner">partner</option><option value="competitor">competitor</option>
+            <option value="regulates">regulates</option>
+          </select>
+          <button class="btn" id="rAdd">+ Add connection</button>
+          <span class="count" id="rCount"></span>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Source</th><th>Type</th><th>Target</th><th>Label</th><th>Verified</th><th></th></tr></thead>
+            <tbody id="rRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- IMPORT / EXPORT -->
+      <section class="section" id="sec-io">
+        <div class="note">Paste or upload JSON with <code>{"entities":[…],"relationships":[…]}</code> (or a plain array of either). Merge adds/overwrites by <code>id</code>; Replace swaps the whole dataset. Nothing is saved until you click <b>Save to server</b>.</div>
+        <div class="toolbar">
+          <input type="file" id="ioFile" accept=".json,.csv" />
+          <label><input type="radio" name="ioMode" value="merge" checked /> Merge</label>
+          <label><input type="radio" name="ioMode" value="replace" /> Replace</label>
+          <button class="btn" id="ioApply">Apply import</button>
+          <button class="btn ghost" id="ioExport">⬇ Export current JSON</button>
+        </div>
+        <textarea id="ioText" rows="12" style="width:100%" placeholder='{"entities":[…],"relationships":[…]}'></textarea>
+        <pre id="ioLog" class="count" style="white-space:pre-wrap"></pre>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="section" id="sec-settings">
+        <h3 style="font-size:15px">Data sources</h3>
         <div id="sourceRows"></div>
-      </div>
-
-      <div class="card">
-        <h2>Connection tests</h2>
-        <p class="sub">Checks the Cloudflare proxy endpoints. Fails locally unless you run <code>wrangler pages dev</code>.</p>
+        <h3 style="font-size:15px;margin-top:18px">Connection tests</h3>
         <div id="testRows"></div>
-        <button class="btn" id="btnTestAll" style="margin-top:10px">Run all tests</button>
-      </div>
-
-      <div class="card">
-        <h2>API keys</h2>
-        <div class="note">🔒 Real API keys must be set as <b>Cloudflare Pages → Settings → Environment variables</b>
-          (e.g. <code>FINNHUB_KEY</code>), <b>not</b> here. Keys placed in the browser are visible to anyone.
-          This section only records which keys you've configured server-side.</div>
-        <div style="margin-top:12px">
-          <label class="fld">Which keys are set in Cloudflare? (checklist only)</label>
-          <div id="keyChecklist"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Knowledge base editor</h2>
-        <p class="sub">Add a company/brand or a relationship, then download the merged
-          <code>knowledge-base.json</code> and commit it. (Static hosting can't write files.)</p>
-        <div id="kbStats" class="sub"></div>
-
-        <div class="grid2">
-          <div>
-            <h3 style="font-size:13px">Add entity</h3>
-            <label class="fld">ID (kebab)<input id="eId" type="text" placeholder="grab-ph"></label>
-            <label class="fld">Name<input id="eName" type="text" placeholder="Grab Philippines"></label>
-            <label class="fld">Category<select id="eCat"></select></label>
-            <label class="fld">Country (code)<input id="eCountry" type="text" value="PH"></label>
-            <label class="fld">Type<select id="eType">
-              <option>company</option><option>brand</option><option>regulator</option></select></label>
-            <label class="fld">Parent ID (optional)<input id="eParent" type="text"></label>
-            <label class="fld">Description<textarea id="eDesc" rows="2"></textarea></label>
-            <button class="btn" id="btnAddEntity">Add entity</button>
-          </div>
-          <div>
-            <h3 style="font-size:13px">Add relationship</h3>
-            <label class="fld">Source ID<input id="rSrc" type="text"></label>
-            <label class="fld">Target ID<input id="rTgt" type="text"></label>
-            <label class="fld">Type<select id="rType">
-              <option value="owns">owns</option><option value="partner">partner</option>
-              <option value="competitor">competitor</option><option value="regulates">regulates</option></select></label>
-            <label class="fld">Label<input id="rLabel" type="text" placeholder="X × Y collab"></label>
-            <label class="fld">Source URL<input id="rUrl" type="text"></label>
-            <button class="btn" id="btnAddRel">Add relationship</button>
-          </div>
-        </div>
-        <div style="margin-top:14px;display:flex;gap:10px">
-          <button class="btn" id="btnDownloadKB">⬇ Download knowledge-base.json</button>
-          <button class="btn ghost" id="btnResetKB">Reset pending edits</button>
-        </div>
-        <pre id="kbLog" class="sub" style="white-space:pre-wrap;margin-top:10px"></pre>
-      </div>
+        <button class="btn" id="btnTestAll" style="margin-top:8px">Run all tests</button>
+        <h3 style="font-size:15px;margin-top:18px">Server keys &amp; storage</h3>
+        <div class="note warn">🔒 Real API keys and the admin token live as <b>Cloudflare → Pages → Settings → Environment variables</b>, never in the browser:
+          <ul style="margin:6px 0 0 16px">
+            <li><code>ADMIN_TOKEN</code> — required to save edits (enter it in the top bar to authorize a save)</li>
+            <li><code>FINNHUB_KEY</code> — enables company-news</li>
+            <li><code>DIGEST_WEBHOOK</code> — Slack/Discord digest target</li>
+          </ul>
+          Live editing also needs a KV namespace bound as <code>KB_STORE</code>. Reads fall back to the bundled dataset if KV isn't set up yet.</div>
+        <div id="keyChecklist"></div>
+      </section>
     </div>
   </div>
 
-  <script src="js/config.js"></script>
-  <script src="js/gate.js"></script>
-  <script src="js/admin.js"></script>
+  <!-- entity modal -->
+  <div class="modal" id="eModal"><div class="card2">
+    <h3 id="eModalTitle">Add entity</h3>
+    <label class="fld">ID (unique, kebab-case)<input id="f_id" type="text"></label>
+    <label class="fld">Name<input id="f_name" type="text"></label>
+    <div class="grid2">
+      <label class="fld">Category<select id="f_category"></select></label>
+      <label class="fld">Type<select id="f_type"><option>company</option><option>brand</option><option>regulator</option></select></label>
+    </div>
+    <div class="grid2">
+      <label class="fld">Role (optional)<input id="f_role" type="text" placeholder="parent / operator / …"></label>
+      <label class="fld">Country<input id="f_country" type="text" value="PH"></label>
+    </div>
+    <label class="fld">Parent ID (optional)<input id="f_parent" type="text" list="entIds"></label>
+    <div class="grid2">
+      <label class="fld">Ticker<input id="f_ticker" type="text"></label>
+      <label class="fld">Website<input id="f_website" type="text"></label>
+    </div>
+    <div class="grid2">
+      <label class="fld">Lat<input id="f_lat" type="number" step="0.0001"></label>
+      <label class="fld">Lng<input id="f_lng" type="number" step="0.0001"></label>
+    </div>
+    <label class="fld">Aliases (comma-separated)<input id="f_aliases" type="text"></label>
+    <label class="fld">Description<textarea id="f_desc" rows="2"></textarea></label>
+    <div class="modal-actions">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn" id="eSaveBtn">Save entity</button>
+    </div>
+  </div></div>
+
+  <!-- connection modal -->
+  <div class="modal" id="rModal"><div class="card2">
+    <h3 id="rModalTitle">Add connection</h3>
+    <label class="fld">Source (owner / actor)<input id="r_source" type="text" list="entIds"></label>
+    <label class="fld">Type<select id="r_type">
+      <option value="owns">owns (source owns target)</option>
+      <option value="partner">partner</option>
+      <option value="competitor">competitor</option>
+      <option value="regulates">regulates</option></select></label>
+    <label class="fld">Target<input id="r_target" type="text" list="entIds"></label>
+    <label class="fld">Label<input id="r_label" type="text" placeholder="e.g. direct / partnership detail"></label>
+    <div class="grid2">
+      <label class="fld">Source URL<input id="r_url" type="text"></label>
+      <label class="fld">Date<input id="r_date" type="text" placeholder="YYYY-MM-DD"></label>
+    </div>
+    <label class="fld"><input id="r_verified" type="checkbox"> verified (sourced)</label>
+    <div class="modal-actions">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn" id="rSaveBtn">Save connection</button>
+    </div>
+  </div></div>
+
+  <datalist id="entIds"></datalist>
+
+  <script src="js/config.js?v=2"></script>
+  <script src="js/gate.js?v=2"></script>
+  <script src="js/admin.js?v=2"></script>
 </body>
 </html>

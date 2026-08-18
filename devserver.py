@@ -221,12 +221,55 @@ class Handler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path.startswith("/api/"):
             name = parsed.path[len("/api/"):]
+            if name == "kb":
+                return self._serve_kb()
             fn = ROUTES.get(name)
             if not fn:
                 return self._json({"error": "unknown endpoint"}, 404)
             qs = parse_qs(parsed.query)
             return self._json(api_me(qs, self.headers) if name == "me" else fn(qs))
         return super().do_GET()
+
+    def do_PUT(self):
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/kb":
+            return self._save_kb()
+        return self._json({"error": "not found"}, 404)
+
+    # local KV stand-in: read/write public/data/knowledge-base.json
+    def _serve_kb(self):
+        try:
+            with open(os.path.join(ROOT, "data", "knowledge-base.json"), "rb") as f:
+                payload = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("x-kb-source", "file")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+        except Exception as e:
+            self._json({"error": str(e)}, 500)
+
+    def _save_kb(self):
+        want = os.environ.get("ADMIN_TOKEN")
+        if want and self.headers.get("X-Admin-Token", "") != want:
+            return self._json({"error": "unauthorized"}, 401)
+        try:
+            n = int(self.headers.get("Content-Length", "0"))
+            body = json.loads(self.rfile.read(n) or b"{}")
+        except Exception as e:
+            return self._json({"error": f"invalid JSON: {e}"}, 400)
+        if not isinstance(body.get("entities"), list) or not isinstance(body.get("relationships"), list):
+            return self._json({"error": "body must contain entities[] and relationships[]"}, 400)
+        ids = {e["id"] for e in body["entities"]}
+        body["relationships"] = [r for r in body["relationships"] if r.get("source") in ids and r.get("target") in ids]
+        body.setdefault("_meta", {})
+        import datetime
+        body["_meta"]["lastUpdated"] = datetime.date.today().isoformat()
+        with open(os.path.join(ROOT, "data", "knowledge-base.json"), "w", encoding="utf-8") as f:
+            json.dump(body, f, ensure_ascii=False, indent=2)
+        return self._json({"ok": True, "entities": len(body["entities"]),
+                           "relationships": len(body["relationships"])})
 
     def _json(self, obj, status=200):
         payload = json.dumps(obj).encode("utf-8")
@@ -235,6 +278,11 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
         self.wfile.write(payload)
+
+    def end_headers(self):
+        # dev: never cache, so edited JS/HTML/JSON always reload fresh
+        self.send_header("Cache-Control", "no-store, max-age=0")
+        super().end_headers()
 
     def log_message(self, fmt, *args):
         sys.stderr.write("  " + (fmt % args) + "\n")

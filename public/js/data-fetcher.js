@@ -14,7 +14,22 @@ window.DATA = (function () {
   }
 
   const loadTaxonomy = () => loadJSON("data/taxonomy.json");
-  const loadKnowledge = () => loadJSON("data/knowledge-base.json");
+
+  /* Load KB from the live store (/api/kb -> KV, or static seed). Falls back to the
+     static file if the proxy isn't available (e.g. opened as a bare file). */
+  async function loadKnowledge() {
+    if (cache["__kb"]) return cache["__kb"];
+    try {
+      const res = await fetch(`${base}/kb`, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error("kb " + res.status);
+      const j = await res.json();
+      if (j && Array.isArray(j.entities)) { cache["__kb"] = j; return j; }
+      throw new Error("bad kb shape");
+    } catch (e) {
+      const j = await loadJSON("data/knowledge-base.json");
+      cache["__kb"] = j; return j;
+    }
+  }
 
   /* GDELT news via proxy. Returns [{title,url,domain,date,country,tone,category?}] */
   async function fetchNews({ query = "", country = "", windowDays = 30 } = {}) {

@@ -161,11 +161,26 @@ The worker fires on its cron schedule and pings `/api/digest`, which posts to th
 
 ---
 
-## Maintaining the knowledge base
+## Maintaining the knowledge base (live admin)
 
-Use **admin.html → Knowledge base editor** to add entities/relationships, then
-**Download `knowledge-base.json`**, drop it into `public/data/`, and commit. Every
-partnership edge should carry a `url` and `verified: true` once cited.
+**`/admin.html`** is a full CRUD console backed by Cloudflare KV — edits save live for
+everyone, no redeploy:
+
+- **Companies & Brands** — search all entities; add / edit / delete any company or brand
+- **Connections** — add / edit / delete relationships (owns / partner / competitor / regulates); deleting an entity cascades its edges
+- **Import / Export** — paste or upload JSON (merge or replace); export the whole dataset
+- **Settings & APIs** — data-source toggles, live connection tests, env-var checklist
+
+The dashboard reads the KB from `/api/kb` (KV if present, else the bundled
+`public/data/knowledge-base.json`). Saving from the admin `PUT`s to KV.
+
+### One-time setup to enable live editing (free)
+1. **Create a KV namespace:** Cloudflare dashboard → Storage & Databases → KV → Create → name it e.g. `market-intel-kb`.
+2. **Bind it to the Pages project:** Pages project → Settings → Functions → KV namespace bindings → Add → **Variable name `KB_STORE`** → select the namespace.
+3. **Set the admin token:** Pages project → Settings → Environment variables → add **`ADMIN_TOKEN`** = a strong secret. You'll type this into the admin's "Admin token" box to authorize a save.
+4. Redeploy (or it applies on next deploy). Until KV is bound, the dashboard still works read-only from the bundled dataset; saves return a clear "KV not bound" message.
+
+> Locally, `python devserver.py` uses `public/data/knowledge-base.json` as the KV stand-in, so admin edits persist straight to that file (no token needed unless you set `ADMIN_TOKEN`).
 
 ---
 
