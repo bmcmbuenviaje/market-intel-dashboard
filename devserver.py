@@ -267,21 +267,47 @@ def _parse_feed(xml, source):
     return out[:12]
 
 
+BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36"
+
+def _gn_entity(q):
+    query = f'"{q}"' if " " in q else q
+    api = "https://news.google.com/rss/search?" + urlencode({"q": query, "hl": "en-PH", "gl": "PH", "ceid": "PH:en"})
+    for _ in range(2):
+        try:
+            status, body = http_get(api, headers={"User-Agent": BROWSER_UA}, retries=0, timeout=8)
+            if status == 200:
+                items = _parse_feed(body.decode("utf-8", "ignore"), "Google News")
+                if items:
+                    items.sort(key=lambda x: x["ts"], reverse=True)
+                    return [{k: a[k] for k in ("title", "url", "source", "date")} for a in items[:15]]
+        except Exception:
+            pass
+    return []
+
+def _gdelt_entity(q):
+    api = "https://api.gdeltproject.org/api/v2/doc/doc?" + urlencode({
+        "query": f'"{q}"', "mode": "ArtList", "format": "json",
+        "maxrecords": "15", "sort": "DateDesc", "timespan": "21d"})
+    try:
+        status, body = http_get(api, retries=0, timeout=8)
+        if status != 200:
+            return []
+        arts = json.loads(body or b"{}").get("articles", [])
+        out = []
+        for a in arts:
+            sd = (a.get("seendate") or "")[:8]
+            out.append({"title": a.get("title"), "url": a.get("url"), "source": a.get("domain", ""),
+                        "date": f"{sd[0:4]}-{sd[4:6]}-{sd[6:8]}" if len(sd) == 8 else ""})
+        return [a for a in out if a["title"] and a["url"]]
+    except Exception:
+        return []
+
 def api_entity_news(qs):
     q = (qs.get("q", [""])[0] or "").strip()
     if not q:
         return {"articles": []}
-    query = f'"{q}"' if " " in q else q
-    api = "https://news.google.com/rss/search?" + urlencode({"q": query, "hl": "en-PH", "gl": "PH", "ceid": "PH:en"})
-    try:
-        status, body = http_get(api, headers={"User-Agent": "Mozilla/5.0 market-intel"}, retries=0, timeout=9)
-        if status != 200:
-            return {"articles": [], "error": f"news {status}"}
-        items = _parse_feed(body.decode("utf-8", "ignore"), "Google News")
-        items.sort(key=lambda x: x["ts"], reverse=True)
-        return {"articles": [{k: a[k] for k in ("title", "url", "source", "date")} for a in items[:12]]}
-    except Exception as e:
-        return {"articles": [], "error": str(e)}
+    arts = _gn_entity(q) or _gdelt_entity(q)
+    return {"articles": arts[:15]}
 
 def api_news(qs):
     days = min(int(qs.get("days", ["7"])[0] or 7), 30)
@@ -298,7 +324,7 @@ def api_news(qs):
     def one(su):
         s, url = su
         try:
-            status, body = http_get(url, headers={"User-Agent": "Mozilla/5.0 market-intel"}, retries=0, timeout=9)
+            status, body = http_get(url, headers={"User-Agent": BROWSER_UA}, retries=0, timeout=9)
             return _parse_feed(body.decode("utf-8", "ignore"), s) if status == 200 else []
         except Exception:
             return []
