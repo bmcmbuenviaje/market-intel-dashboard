@@ -19,8 +19,10 @@ const KEYS = [
   { id: "FINNHUB_KEY", label: "Finnhub" },
   { id: "DIGEST_WEBHOOK", label: "Digest webhook" },
   { id: "YOUTUBE_API_KEY", label: "YouTube Data API (social)" },
-  { id: "REDDIT_CLIENT_ID", label: "Reddit client id (social)" },
-  { id: "REDDIT_CLIENT_SECRET", label: "Reddit client secret (social)" }
+  { id: "BLUESKY_IDENTIFIER", label: "Bluesky handle (social, optional)" },
+  { id: "BLUESKY_APP_PASSWORD", label: "Bluesky app password (social, optional)" },
+  { id: "REDDIT_CLIENT_ID", label: "Reddit client id (social, optional)" },
+  { id: "REDDIT_CLIENT_SECRET", label: "Reddit client secret (social, optional)" }
 ];
 
 async function init() {

@@ -349,13 +349,20 @@ def _yt_social(q, key):
     except Exception as e:
         return [], True, str(e)
 
-def _bluesky_social(q):
-    api = "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?" + urlencode({"q": q, "limit": "12"})
+def _bluesky_social(q, ident, pw):
+    if not ident or not pw:
+        return [], False, None
     try:
-        status, body = http_get(api, headers={"User-Agent": BROWSER_UA}, retries=0, timeout=8)
-        if status != 200:
-            return [], f"bsky {status}"
-        d = json.loads(body)
+        from urllib.request import Request as _R
+        sreq = _R("https://bsky.social/xrpc/com.atproto.server.createSession",
+                  data=json.dumps({"identifier": ident, "password": pw}).encode(),
+                  headers={"content-type": "application/json"})
+        jwt = json.loads(urlopen(sreq, timeout=8, context=SSL_CTX).read()).get("accessJwt")
+        if not jwt:
+            return [], True, "no token"
+        url = "https://bsky.social/xrpc/app.bsky.feed.searchPosts?" + urlencode({"q": q, "limit": "12"})
+        req = _R(url, headers={"Authorization": "Bearer " + jwt})
+        d = json.loads(urlopen(req, timeout=8, context=SSL_CTX).read())
         items = []
         for p in d.get("posts", []):
             rec = p.get("record", {}) or {}
@@ -366,9 +373,9 @@ def _bluesky_social(q):
             uri = p.get("uri", "")
             items.append({"title": text, "url": f"https://bsky.app/profile/{handle}/post/{uri.split('/')[-1]}",
                           "source": "@" + handle, "date": (rec.get("createdAt") or p.get("indexedAt") or "")[:10], "score": p.get("likeCount")})
-        return items, None
+        return items, True, None
     except Exception as e:
-        return [], str(e)
+        return [], True, str(e)
 
 def _hn_social(q):
     api = "https://hn.algolia.com/api/v1/search_by_date?" + urlencode({"query": q, "tags": "story", "hitsPerPage": "6"})
@@ -426,13 +433,13 @@ def api_social(qs):
     if not q:
         return {"mentions": 0}
     yt, ytc, yte = _yt_social(q, os.environ.get("YOUTUBE_API_KEY"))
-    bs, bse = _bluesky_social(q)
+    bs, bsc, bse = _bluesky_social(q, os.environ.get("BLUESKY_IDENTIFIER"), os.environ.get("BLUESKY_APP_PASSWORD"))
     hn, hne = _hn_social(q)
     rd, rdc, rde = _reddit_social(q, os.environ.get("REDDIT_CLIENT_ID"), os.environ.get("REDDIT_CLIENT_SECRET"))
     allitems = yt + bs + hn + rd
     allt = " ".join(x["title"] for x in allitems)
     return {"youtube": yt, "bluesky": bs, "hackernews": hn, "reddit": rd, "mentions": len(allitems), "sentiment": _senti(allt),
-            "configured": {"youtube": ytc, "reddit": rdc, "bluesky": True, "hackernews": True},
+            "configured": {"youtube": ytc, "reddit": rdc, "bluesky": bsc, "hackernews": True},
             "errors": {"youtube": yte, "bluesky": bse, "hackernews": hne, "reddit": rde}}
 
 def api_news(qs):

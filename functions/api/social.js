@@ -13,7 +13,7 @@ export async function onRequestGet({ request, env }) {
   if (!q) return json({ mentions: 0 });
   const [yt, bs, hn, rd] = await Promise.all([
     youtube(q, env.YOUTUBE_API_KEY),
-    bluesky(q),
+    bluesky(q, env.BLUESKY_IDENTIFIER, env.BLUESKY_APP_PASSWORD),
     hackernews(q),
     reddit(q, env.REDDIT_CLIENT_ID, env.REDDIT_CLIENT_SECRET)
   ]);
@@ -22,7 +22,7 @@ export async function onRequestGet({ request, env }) {
     youtube: yt.items, bluesky: bs.items, hackernews: hn.items, reddit: rd.items,
     mentions: all.length,
     sentiment: sentimentOf(all.map(x => x.title).join(" ")),
-    configured: { youtube: yt.configured, reddit: rd.configured, bluesky: true, hackernews: true },
+    configured: { youtube: yt.configured, reddit: rd.configured, bluesky: bs.configured, hackernews: true },
     errors: { youtube: yt.error || null, bluesky: bs.error || null, hackernews: hn.error || null, reddit: rd.error || null }
   }, 200, all.length ? 1800 : 120);
 }
@@ -42,11 +42,19 @@ async function youtube(q, key) {
   } catch (e) { return { items: [], configured: true, error: String(e) }; }
 }
 
-async function bluesky(q) {
+async function bluesky(q, ident, pass) {
+  if (!ident || !pass) return { items: [], configured: false };
   try {
-    const r = await fetch(`https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=${encodeURIComponent(q)}&limit=12`,
-      { headers: { "User-Agent": BUA }, signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return { items: [], error: "bsky " + r.status };
+    const sr = await fetch("https://bsky.social/xrpc/com.atproto.server.createSession", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ identifier: ident, password: pass }), signal: AbortSignal.timeout(8000)
+    });
+    if (!sr.ok) return { items: [], configured: true, error: "bsky auth " + sr.status };
+    const jwt = (await sr.json()).accessJwt;
+    if (!jwt) return { items: [], configured: true, error: "bsky no token" };
+    const r = await fetch(`https://bsky.social/xrpc/app.bsky.feed.searchPosts?q=${encodeURIComponent(q)}&limit=12`,
+      { headers: { "Authorization": "Bearer " + jwt }, signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return { items: [], configured: true, error: "bsky " + r.status };
     const d = await r.json();
     const items = (d.posts || []).map(p => ({
       platform: "Bluesky",
@@ -55,8 +63,8 @@ async function bluesky(q) {
       source: "@" + p.author.handle, date: ((p.record && p.record.createdAt) || p.indexedAt || "").slice(0, 10),
       score: p.likeCount
     })).filter(x => x.title);
-    return { items };
-  } catch (e) { return { items: [], error: String(e) }; }
+    return { items, configured: true };
+  } catch (e) { return { items: [], configured: true, error: String(e) }; }
 }
 
 async function hackernews(q) {
