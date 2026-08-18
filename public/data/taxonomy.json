@@ -1,0 +1,38 @@
+{
+  "categories": [
+    { "id": "food",         "label": "Food & QSR",        "color": "#22c55e", "icon": "🍔" },
+    { "id": "gaming",       "label": "Gaming / Esports",  "color": "#3b82f6", "icon": "🎮" },
+    { "id": "igaming",      "label": "iGaming / Casino",  "color": "#a855f7", "icon": "🎰" },
+    { "id": "beauty",       "label": "Beauty & Personal", "color": "#ec4899", "icon": "💄" },
+    { "id": "fintech",      "label": "Fintech / Payments","color": "#14b8a6", "icon": "💳" },
+    { "id": "telco",        "label": "Telco",             "color": "#f59e0b", "icon": "📶" },
+    { "id": "media",        "label": "Media / Broadcast", "color": "#6366f1", "icon": "📺" },
+    { "id": "hospitality",  "label": "Hospitality / Hotels","color": "#06b6d4", "icon": "🏨" },
+    { "id": "retail",       "label": "Retail & E-comm",   "color": "#ef4444", "icon": "🛒" },
+    { "id": "fmcg",         "label": "FMCG / Beverage",   "color": "#84cc16", "icon": "🥤" },
+    { "id": "conglomerate", "label": "Conglomerate",      "color": "#64748b", "icon": "🏢" },
+    { "id": "regulator",    "label": "Regulator / Body",  "color": "#94a3b8", "icon": "⚖️" }
+  ],
+  "relationshipTypes": [
+    { "id": "owns",      "label": "Owns / Subsidiary", "style": "solid",  "color": "#e2e8f0" },
+    { "id": "partner",   "label": "Partnership / Deal","style": "dashed", "color": "#38bdf8" },
+    { "id": "competitor","label": "Competitor",        "style": "dotted", "color": "#f87171" },
+    { "id": "regulates", "label": "Regulates",         "style": "dotted", "color": "#a78bfa" }
+  ],
+  "regions": [
+    { "id": "global", "label": "Global",         "countries": [] },
+    { "id": "sea",    "label": "Southeast Asia", "countries": ["PH","ID","MY","SG","TH","VN"] },
+    { "id": "apac",   "label": "APAC",           "countries": ["PH","ID","MY","SG","TH","VN","CN","JP","KR","IN","AU"] }
+  ],
+  "countries": [
+    { "code": "PH", "label": "Philippines", "lat": 12.88, "lng": 121.77 },
+    { "code": "SG", "label": "Singapore",   "lat": 1.35,  "lng": 103.82 },
+    { "code": "ID", "label": "Indonesia",   "lat": -2.55, "lng": 118.01 },
+    { "code": "MY", "label": "Malaysia",    "lat": 4.21,  "lng": 101.98 },
+    { "code": "VN", "label": "Vietnam",     "lat": 14.06, "lng": 108.28 },
+    { "code": "TH", "label": "Thailand",    "lat": 15.87, "lng": 100.99 },
+    { "code": "CN", "label": "China",       "lat": 35.86, "lng": 104.20 },
+    { "code": "KR", "label": "South Korea", "lat": 35.91, "lng": 127.77 },
+    { "code": "US", "label": "United States","lat": 37.09, "lng": -95.71 }
+  ]
+}

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin · Market Intel</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .wrap { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+    .card h2 { margin: 0 0 4px; font-size: 16px; }
+    .card p.sub { color: var(--muted); margin: 0 0 14px; font-size: 13px; }
+    .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+    .row:last-child { border-bottom: 0; }
+    .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    .pill.ok { color: var(--good); border-color: var(--good); }
+    .pill.err { color: var(--bad); border-color: var(--bad); }
+    input[type=text], textarea, select { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px; width: 100%; font: inherit; }
+    label.fld { display: block; margin: 8px 0; font-size: 12px; color: var(--muted); }
+    switch { }
+    .toggle { width: 42px; height: 24px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); position: relative; cursor: pointer; }
+    .toggle.on { background: var(--accent); }
+    .toggle span { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: .15s; }
+    .toggle.on span { left: 20px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .note { background: rgba(245,158,11,.1); border: 1px solid var(--warn); color: #fcd9a0; padding: 10px 12px; border-radius: 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div id="gate" class="gate">
+    <form id="gateForm" class="gate-card">
+      <h1>🔐 Admin</h1>
+      <p>Enter access code.</p>
+      <input id="gatePass" type="password" autocomplete="off" />
+      <button type="submit">Enter</button>
+      <small id="gateErr" class="gate-err"></small>
+    </form>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h1 style="margin:0">⚙️ Admin Panel</h1>
+        <a href="index.html" class="btn ghost">← Dashboard</a>
+      </div>
+
+      <div class="card">
+        <h2>Data sources</h2>
+        <p class="sub">Toggle which live feeds the dashboard queries. Saved to this browser.</p>
+        <div id="sourceRows"></div>
+      </div>
+
+      <div class="card">
+        <h2>Connection tests</h2>
+        <p class="sub">Checks the Cloudflare proxy endpoints. Fails locally unless you run <code>wrangler pages dev</code>.</p>
+        <div id="testRows"></div>
+        <button class="btn" id="btnTestAll" style="margin-top:10px">Run all tests</button>
+      </div>
+
+      <div class="card">
+        <h2>API keys</h2>
+        <div class="note">🔒 Real API keys must be set as <b>Cloudflare Pages → Settings → Environment variables</b>
+          (e.g. <code>FINNHUB_KEY</code>), <b>not</b> here. Keys placed in the browser are visible to anyone.
+          This section only records which keys you've configured server-side.</div>
+        <div style="margin-top:12px">
+          <label class="fld">Which keys are set in Cloudflare? (checklist only)</label>
+          <div id="keyChecklist"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Knowledge base editor</h2>
+        <p class="sub">Add a company/brand or a relationship, then download the merged
+          <code>knowledge-base.json</code> and commit it. (Static hosting can't write files.)</p>
+        <div id="kbStats" class="sub"></div>
+
+        <div class="grid2">
+          <div>
+            <h3 style="font-size:13px">Add entity</h3>
+            <label class="fld">ID (kebab)<input id="eId" type="text" placeholder="grab-ph"></label>
+            <label class="fld">Name<input id="eName" type="text" placeholder="Grab Philippines"></label>
+            <label class="fld">Category<select id="eCat"></select></label>
+            <label class="fld">Country (code)<input id="eCountry" type="text" value="PH"></label>
+            <label class="fld">Type<select id="eType">
+              <option>company</option><option>brand</option><option>regulator</option></select></label>
+            <label class="fld">Parent ID (optional)<input id="eParent" type="text"></label>
+            <label class="fld">Description<textarea id="eDesc" rows="2"></textarea></label>
+            <button class="btn" id="btnAddEntity">Add entity</button>
+          </div>
+          <div>
+            <h3 style="font-size:13px">Add relationship</h3>
+            <label class="fld">Source ID<input id="rSrc" type="text"></label>
+            <label class="fld">Target ID<input id="rTgt" type="text"></label>
+            <label class="fld">Type<select id="rType">
+              <option value="owns">owns</option><option value="partner">partner</option>
+              <option value="competitor">competitor</option><option value="regulates">regulates</option></select></label>
+            <label class="fld">Label<input id="rLabel" type="text" placeholder="X × Y collab"></label>
+            <label class="fld">Source URL<input id="rUrl" type="text"></label>
+            <button class="btn" id="btnAddRel">Add relationship</button>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px">
+          <button class="btn" id="btnDownloadKB">⬇ Download knowledge-base.json</button>
+          <button class="btn ghost" id="btnResetKB">Reset pending edits</button>
+        </div>
+        <pre id="kbLog" class="sub" style="white-space:pre-wrap;margin-top:10px"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/gate.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

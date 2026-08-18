@@ -1,0 +1,8 @@
+name = "market-intel-dashboard"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "public"
+
+# Static assets live in ./public ; serverless proxy lives in ./functions/api/*
+# Set secrets in the Cloudflare dashboard (Pages > Settings > Environment variables):
+#   FINNHUB_KEY = <your key>
+# Local dev:  npx wrangler pages dev
