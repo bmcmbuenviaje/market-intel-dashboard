@@ -57,5 +57,7 @@ window.MAPVIEW = (function () {
     if (c) map.setView([c.lat, c.lng], 6);
   }
 
-  return { init, setCategoryColors, render, focus, invalidate: () => map && map.invalidateSize() };
+  function centerOn(lat, lng, zoom) { if (map && lat != null && lng != null) map.setView([lat, lng], zoom || 7); }
+
+  return { init, setCategoryColors, render, focus, centerOn, invalidate: () => map && map.invalidateSize() };
 })();

@@ -2,7 +2,8 @@
 (function () {
   const S = {
     taxonomy: null, kb: null, news: [], sparkChart: null, reqToken: 0,
-    tab: "targets", view: null, entNewsToken: 0, socialToken: 0
+    tab: "targets", view: null, entNewsToken: 0, socialToken: 0,
+    focus: null, nameIndex: {}
   };
 
   /* ---- watchlist (localStorage) ---- */
@@ -15,6 +16,8 @@
     return i < 0;
   }
   const $ = (id) => document.getElementById(id);
+  const byId = (id) => S.kb && S.kb.entities.find(e => e.id === id);
+  const catLabel = (id) => { const c = S.taxonomy && (S.taxonomy.categories || []).find(x => x.id === id); return c ? c.label : id; };
   const status = (msg, ok = true) => { $("statusBar").innerHTML =
     `<span style="color:${ok ? "#8598b6" : "#f87171"}">${msg}</span>`; };
 
@@ -31,6 +34,7 @@
     MAPVIEW.setCategoryColors(S.taxonomy.categories);
     GRAPHVIEW.setColors(S.taxonomy.categories, S.taxonomy.relationshipTypes);
     populateFilterOptions();
+    buildSearchIndex();
     wireEvents();
 
     // default scope
@@ -103,6 +107,8 @@
     $("fCountry").onchange = (e) => { FILTERS.state.country = e.target.value; refresh(); };
     $("fCategory").onchange = (e) => { FILTERS.state.category = e.target.value; refresh(); };
     $("fWindow").onchange = (e) => { FILTERS.state.windowDays = +e.target.value; refresh(); };
+    $("fSearch").addEventListener("change", () => doSearch($("fSearch").value));
+    $("fSearch").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); doSearch($("fSearch").value); } });
     $("btnRefresh").onclick = refresh;
     $("btnFit").onclick = GRAPHVIEW.fit;
     $("btnLogout").onclick = () => window.miLogout();
@@ -144,6 +150,7 @@
   }
 
   async function refresh() {
+    S.focus = null; // any full refresh (filter change / refresh button) exits focus mode
     const sources = window.getSources();
     const view = currentView();
     const token = ++S.reqToken; // guards against stale async renders after a filter change
@@ -306,6 +313,88 @@
     }).join("");
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+  /* ---------- Search + focus mode ---------- */
+  function buildSearchIndex() {
+    $("allEntities").innerHTML = S.kb.entities.map(e => `<option value="${esc(e.name)}"></option>`).join("");
+    S.nameIndex = {};
+    S.kb.entities.forEach(e => {
+      S.nameIndex[e.name.toLowerCase()] = e.id;
+      (e.aliases || []).forEach(a => { if (a) S.nameIndex[a.toLowerCase()] = e.id; });
+    });
+  }
+  function doSearch(q) {
+    q = (q || "").trim(); if (!q) return;
+    let id = S.nameIndex[q.toLowerCase()];
+    if (!id) {
+      const lq = q.toLowerCase();
+      const hit = S.kb.entities.find(e => e.name.toLowerCase().includes(lq) || (e.aliases || []).some(a => a.toLowerCase().includes(lq)));
+      id = hit && hit.id;
+    }
+    if (id) focusEntity(id);
+    else status(`No match for "${q}" — try another name.`, false);
+  }
+  function egoSubgraph(id) {
+    const rels = S.kb.relationships;
+    const keep = new Set([id]);
+    rels.forEach(r => { if (r.source === id) keep.add(r.target); if (r.target === id) keep.add(r.source); });
+    let cur = id; // walk the ownership chain up to the ultimate parent
+    for (let i = 0; i < 8; i++) { const e = byId(cur); if (e && e.parent && byId(e.parent)) { keep.add(e.parent); cur = e.parent; } else break; }
+    const self = byId(id); // include siblings under the same parent
+    if (self && self.parent) rels.forEach(r => { if (r.type === "owns" && r.source === self.parent) keep.add(r.target); });
+    return { entities: S.kb.entities.filter(e => keep.has(e.id)), relationships: rels.filter(r => keep.has(r.source) && keep.has(r.target)) };
+  }
+  function focusEntity(id) {
+    const e = byId(id); if (!e) return;
+    S.focus = id;
+    ++S.reqToken; // supersede any in-flight refresh so it won't overwrite the focus view
+    $("fSearch").value = e.name;
+    const ego = egoSubgraph(id);
+    $("statusBar").innerHTML = `<span class="focus-tag">🔎 Focused on ${esc(e.name)} · ${esc(catLabel(e.category))} · ${ego.entities.length - 1} connection(s)<a id="clearFocus">show full view ✕</a></span>`;
+    const cf = document.getElementById("clearFocus"); if (cf) cf.onclick = clearFocus;
+    selectEntity(id);                                   // entity profile (+ recent news + social)
+    GRAPHVIEW.build(ego.entities, ego.relationships);   // relationship graph → its network
+    setTimeout(() => GRAPHVIEW.highlight(id), 350);
+    MAPVIEW.render(ego.entities, []);                   // map → just its network
+    if (e.lat != null && e.lng != null) MAPVIEW.centerOn(e.lat, e.lng, 7);
+    renderIntelFocused(e);                              // intelligence → focused BD view
+    renderFeedFocused(e);                               // live signal feed → its news
+  }
+  function clearFocus() { S.focus = null; $("fSearch").value = ""; $("statusBar").textContent = ""; refresh(); }
+
+  function renderIntelFocused(e) {
+    const rels = S.kb.relationships;
+    const partners = rels.filter(r => r.type === "partner" && (r.source === e.id || r.target === e.id));
+    const comps = rels.filter(r => r.type === "competitor" && (r.source === e.id || r.target === e.id)).map(r => r.source === e.id ? r.target : r.source);
+    const owns = rels.filter(r => r.type === "owns" && r.source === e.id).map(r => r.target);
+    const rivalDeals = comps.filter(c => rels.some(r => r.type === "partner" && (r.source === c || r.target === c)));
+    const grp = (t, arr) => arr.length ? `<div class="bd-card"><div class="top"><strong>${t}</strong><span class="muted">${arr.length}</span></div><div class="why">${arr.slice(0, 12).map(esc).join(" · ")}</div></div>` : "";
+    const cards = [
+      `<div class="bd-card" data-id="${e.id}"><div class="top"><span><strong>🔎 ${esc(e.name)}</strong></span>
+        <button class="star ${isWatched(e.id) ? "" : "off"}" data-star="${e.id}">${isWatched(e.id) ? "★" : "☆"}</button></div>
+        <div class="why">${esc(catLabel(e.category))} · ${esc(e.country)}${e.parent ? " · under " + esc(nameOf(e.parent)) : ""}</div></div>`
+    ];
+    if (!partners.length && rivalDeals.length)
+      cards.push(`<div class="bd-card ws"><div class="top"><strong>⚑ Whitespace opening</strong></div><div class="why">No partnership on record — but rival(s) ${rivalDeals.map(nameOf).map(esc).join(", ")} already have deals. Prime target.</div></div>`);
+    cards.push(grp("Partnerships", partners.map(p => (p.label ? p.label + " → " : "") + nameOf(p.source === e.id ? p.target : p.source))));
+    cards.push(grp("Competitors", comps.map(nameOf)));
+    cards.push(grp("Owns / brands", owns.map(nameOf)));
+    $("bdList").innerHTML = cards.join("");
+    $("bdList").querySelectorAll("[data-star]").forEach(b => b.onclick = (ev) => { ev.stopPropagation(); toggleWatch(b.dataset.star); focusEntity(e.id); });
+  }
+  async function renderFeedFocused(e) {
+    const tagged = S.news.filter(n => (n.entityIds || []).includes(e.id) || n.entitySeed === e.id);
+    renderFeed(tagged);
+    try {
+      const live = await DATA.fetchEntityNews(e.name);
+      if (S.focus !== e.id) return;
+      const mk = a => ({ ...a, sentiment: DATA.keywordSentiment(a.title), category: e.category });
+      const seen = new Set();
+      const all = [...live.map(mk), ...tagged].filter(n => n.url && !seen.has(n.url) && (seen.add(n.url), true));
+      all.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      renderFeed(all);
+    } catch (err) { /* keep tagged */ }
+  }
 
   /* ---------- Entity profile ---------- */
   function selectEntity(id) {
