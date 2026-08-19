@@ -20,13 +20,14 @@ export async function onRequest({ request, env }) {
     const texts = (body.texts || []).slice(0, 12).map(t => String(t).replace(/\s+/g, " ").slice(0, 160)).filter(Boolean);
     if (!texts.length) return json({ summary: "", sentiment: 0 });
     const prompt = `You are a market-intelligence analyst for a business-development team. Based ONLY on these recent headlines about "${name}", write ONE concise sentence (max 32 words) on what is happening with them right now and why a BD team should care. Do not add preamble.\n\nHeadlines:\n- ${texts.join("\n- ")}`;
-    let summary = "";
+    let summary = "", dbg = "";
     try {
-      const r = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { max_tokens: 120, messages: [{ role: "user", content: prompt }] });
-      summary = String((r && (r.response || r.result || "")) || "").trim().replace(/^"(.*)"$/, "$1");
-    } catch (e) { summary = ""; }
+      const r = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { max_tokens: 160, messages: [{ role: "user", content: prompt }] });
+      summary = String((r && (r.response ?? (r.result && r.result.response) ?? r.text ?? (typeof r === "string" ? r : ""))) || "").trim().replace(/^"(.*)"$/, "$1");
+      if (!summary) dbg = "shape:" + JSON.stringify(r).slice(0, 220);
+    } catch (e) { dbg = "err:" + String(e).slice(0, 220); }
     const senti = await sentiment(env, texts.join(". ")).catch(() => 0);
-    return json({ summary, sentiment: senti });
+    return json({ summary, sentiment: senti, _debug: dbg });
   }
   return json({ error: "unknown action" }, 400);
 }
