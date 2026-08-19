@@ -76,6 +76,7 @@
       <div class="tabs">
         <button class="tab active" data-sec="entities">Companies &amp; Brands</button>
         <button class="tab" data-sec="connections">Connections</button>
+        <button class="tab" data-sec="suggest">🔗 Suggestions</button>
         <button class="tab" data-sec="io">Import / Export</button>
         <button class="tab" data-sec="settings">Settings &amp; APIs</button>
       </div>
@@ -114,6 +115,16 @@
             <tbody id="rRows"></tbody>
           </table>
         </div>
+      </section>
+
+      <!-- SUGGESTIONS -->
+      <section class="section" id="sec-suggest">
+        <div class="note">Scans recent business news for partnership / acquisition language mentioning two known entities, and suggests new graph connections. Approve to add them (then click <b>Save to server</b>).</div>
+        <div class="toolbar">
+          <button class="btn" id="suggScan">🔎 Scan recent news</button>
+          <span class="count" id="suggCount"></span>
+        </div>
+        <div id="suggRows"></div>
       </section>
 
       <!-- IMPORT / EXPORT -->
@@ -204,8 +215,8 @@
 
   <datalist id="entIds"></datalist>
 
-  <script src="js/config.js?v=2"></script>
-  <script src="js/gate.js?v=2"></script>
-  <script src="js/admin.js?v=2"></script>
+  <script src="js/config.js?v=3"></script>
+  <script src="js/gate.js?v=3"></script>
+  <script src="js/admin.js?v=3"></script>
 </body>
 </html>

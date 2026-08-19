@@ -88,7 +88,64 @@ function wire() {
   $("ioApply").onclick = applyImport;
   $("ioExport").onclick = exportJSON;
   $("ioFile").onchange = loadFile;
+  $("suggScan").onclick = scanSuggestions;
   $("adminToken").onchange = () => sessionStorage.setItem("mi_admin_token", $("adminToken").value.trim());
+}
+
+/* ---------- partnership auto-detector ---------- */
+let SUGG = [];
+const PARTNER_RX = /\b(partner|partners|partnership|teams up|team up|collaborat|tie-?up|joins forces|join forces|sponsor|signs? deal|inks? deal|deal with|jv|joint venture|to launch .* with)\b/i;
+const OWNS_RX = /\b(acquire|acquires|acquisition|acquired|buys|bought|to buy|takeover|take over|majority stake|controlling stake|stake in|merger|merges with)\b/i;
+
+async function scanSuggestions() {
+  const rows = $("suggRows"); const cnt = $("suggCount");
+  cnt.textContent = "scanning…"; rows.innerHTML = "";
+  let articles = [];
+  try { articles = (await (await fetch("/api/news?days=10")).json()).articles || []; } catch (e) {}
+  // name/alias index (skip very short names to avoid noise)
+  const idx = S.kb.entities.map(e => ({ id: e.id, needles: [e.name, ...(e.aliases || [])].map(s => s.toLowerCase()).filter(s => s.length > 3) }));
+  const have = new Set(S.kb.relationships.map(r => [r.source, r.target].sort().join("|") + "|" + r.type));
+  const seen = new Set(); SUGG = [];
+  articles.forEach(a => {
+    const text = (a.title || "") + " " + (a.summary || "");
+    const t = text.toLowerCase();
+    const type = OWNS_RX.test(t) ? "owns" : (PARTNER_RX.test(t) ? "partner" : null);
+    if (!type) return;
+    const hits = []; idx.forEach(({ id, needles }) => { if (needles.some(n => t.includes(n))) hits.push(id); });
+    const uniq = [...new Set(hits)];
+    if (uniq.length < 2) return;
+    const [s, tg] = uniq;
+    const key = [s, tg].sort().join("|") + "|" + type;
+    if (have.has(key) || seen.has(key)) return;
+    seen.add(key);
+    SUGG.push({ source: s, target: tg, type, label: (a.title || "").slice(0, 90), url: a.url, src: a.source || a.domain || "" });
+  });
+  cnt.textContent = `${SUGG.length} suggestion(s) from ${articles.length} articles`;
+  renderSuggestions();
+}
+
+function renderSuggestions() {
+  const rows = $("suggRows");
+  if (!SUGG.length) { rows.innerHTML = `<p class="count" style="padding:8px">No new connections detected. Try again later as news updates.</p>`; return; }
+  rows.innerHTML = SUGG.map((g, i) => `<div class="row">
+      <span><strong>${esc(nameOf(g.source))}</strong> <span class="pill">${g.type}</span> <strong>${esc(nameOf(g.target))}</strong>
+        <br><span class="count">${esc(g.label)} · ${esc(g.src)}</span></span>
+      <span style="white-space:nowrap">
+        <button class="rowbtn" data-flip="${i}">⇄ flip</button>
+        <button class="rowbtn" data-approve="${i}">✓ Approve</button>
+        <button class="rowbtn del" data-dismiss="${i}">Dismiss</button></span>
+    </div>`).join("");
+  rows.querySelectorAll("[data-approve]").forEach(b => b.onclick = () => approveSugg(+b.dataset.approve));
+  rows.querySelectorAll("[data-dismiss]").forEach(b => b.onclick = () => { SUGG.splice(+b.dataset.dismiss, 1); renderSuggestions(); });
+  rows.querySelectorAll("[data-flip]").forEach(b => b.onclick = () => { const g = SUGG[+b.dataset.flip]; [g.source, g.target] = [g.target, g.source]; renderSuggestions(); });
+}
+
+function approveSugg(i) {
+  const g = SUGG[i]; if (!g) return;
+  S.kb.relationships.push({ source: g.source, target: g.target, type: g.type, label: g.label, url: g.url, verified: false });
+  SUGG.splice(i, 1);
+  markDirty(); refreshAll(); renderSuggestions();
+  $("suggCount").textContent = "Added — remember to Save to server.";
 }
 
 /* ---------- entities table ---------- */
