@@ -133,6 +133,8 @@ a:hover { text-decoration: underline; }
 }
 .bd-card.ws { border-left-color: var(--accent-2); }
 .bd-card.wl { border-left-color: var(--warn); }
+.bd-card.hot { border-left-color: #f97316; }
+.bd-card.hot .score { color: #f97316; }
 .bd-card:hover { border-color: var(--accent); }
 .bd-card .score { font-weight: 700; color: var(--accent); }
 .bd-card.ws .score { color: var(--accent-2); }

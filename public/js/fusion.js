@@ -121,5 +121,50 @@ window.FUSION = (function () {
     return out.sort((a, b) => b.score - a.score).slice(0, 15);
   }
 
-  return { tagNewsToEntities, perEntitySignals, rank, whitespace };
+  /* Hot List: a single "who to pitch now & why" ranking that blends recent news
+     volume + recency, sentiment, partnership-receptiveness, whitespace, watchlist,
+     and team-submitted signals. Returns {id,name,score,why[],senti,buzz}. */
+  function hotlist(allEntities, news, relationships, filters, opts) {
+    opts = opts || {};
+    const watch = new Set(opts.watch || []);
+    const today = opts.today ? Date.parse(opts.today) : Date.now();
+    const sig = perEntitySignals(allEntities, news, relationships);
+    const partnerSet = new Set();
+    relationships.filter(r => r.type === "partner").forEach(r => { partnerSet.add(r.source); partnerSet.add(r.target); });
+    const compMap = {};
+    relationships.filter(r => r.type === "competitor").forEach(r => {
+      (compMap[r.source] = compMap[r.source] || []).push(r.target);
+      (compMap[r.target] = compMap[r.target] || []).push(r.source);
+    });
+    const nameOf = (id) => { const e = allEntities.find(x => x.id === id); return e ? e.name : id; };
+
+    const out = [];
+    allEntities.forEach(e => {
+      if (e.type === "regulator") return;
+      if (!filters.entityVisible(e)) return;
+      const s = sig[e.id];
+      const arts = s.articles;
+      const senti = arts.length ? Math.round(arts.reduce((a, n) => a + (typeof n.sentiment === "number" ? n.sentiment : 0), 0) / arts.length) : 0;
+      const recent = arts.filter(n => n.date && (today - Date.parse(n.date)) <= 3 * 864e5).length;
+      const submitted = arts.filter(n => n.submitted).length;
+      let score = 0; const why = [];
+
+      if (recent > 0) { score += Math.min(recent * 10, 30); why.push(`${recent} article${recent > 1 ? "s" : ""} in the last 3 days`); }
+      else if (arts.length) { score += Math.min(arts.length * 4, 16); why.push(`${arts.length} recent article${arts.length > 1 ? "s" : ""}`); }
+      if (senti >= 8) { score += 16; why.push(`positive momentum (+${senti})`); }
+      else if (senti <= -8) { score += 10; why.push(`negative news (${senti}) — timing/PR angle`); }
+      if (submitted) { score += 8; why.push(`flagged by your team`); }
+      if (partnerSet.has(e.id)) { score += 12; why.push(`actively does partnerships`); }
+      const rivalsWithDeals = (compMap[e.id] || []).filter(c => partnerSet.has(c) && !partnerSet.has(e.id)).map(nameOf);
+      if (rivalsWithDeals.length) { score += 22; why.push(`whitespace: rival ${rivalsWithDeals[0]} has a deal, ${e.name} doesn't`); }
+      if (watch.has(e.id)) { score += 10; why.push(`on your watchlist`); }
+      if (e.role === "parent" || e.role === "ultimate-owner") { score += 5; }
+
+      if (score <= 0) return;
+      out.push({ id: e.id, name: e.name, category: e.category, country: e.country, score, senti, buzz: arts.length, why });
+    });
+    return out.sort((a, b) => b.score - a.score).slice(0, 15);
+  }
+
+  return { tagNewsToEntities, perEntitySignals, rank, whitespace, hotlist };
 })();

@@ -2,7 +2,7 @@
 (function () {
   const S = {
     taxonomy: null, kb: null, news: [], sparkChart: null, reqToken: 0,
-    tab: "targets", view: null, entNewsToken: 0, socialToken: 0,
+    tab: "hotlist", view: null, entNewsToken: 0, socialToken: 0,
     focus: null, nameIndex: {}, submitted: []
   };
 
@@ -251,7 +251,13 @@
   function renderIntel() {
     const el = $("bdList");
     if (!S.view) return;
-    if (S.tab === "targets") {
+    if (S.tab === "hotlist") {
+      const list = FUSION.hotlist(S.kb.entities, S.news, S.kb.relationships, FILTERS,
+        { watch: getWatch(), today: new Date().toISOString().slice(0, 10) });
+      el.innerHTML = list.length ? list.map(t => card(t, "hot")).join("")
+        : `<p class="muted" style="padding:8px">No hot signals yet — live news may still be loading, or widen the scope/category.</p>`;
+      wireCards(el);
+    } else if (S.tab === "targets") {
       const list = FUSION.rank(S.kb.entities, S.news, S.kb.relationships, FILTERS);
       el.innerHTML = list.length ? list.map(t => card(t, "")).join("")
         : `<p class="muted" style="padding:8px">No strong targets for this filter. Widen scope or category.</p>`;
