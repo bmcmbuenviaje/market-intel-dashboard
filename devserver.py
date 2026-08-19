@@ -581,6 +581,22 @@ class Handler(SimpleHTTPRequestHandler):
             return self._post_signal()
         return self._json({"error": "not found"}, 404)
 
+    def do_DELETE(self):
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/signals":
+            _id = parse_qs(parsed.query).get("id", [""])[0]
+            p = os.path.join(ROOT, "data", "submitted-signals.json")
+            try:
+                with open(p, encoding="utf-8") as f:
+                    lst = json.load(f)
+            except Exception:
+                lst = []
+            n0 = len(lst); lst = [s for s in lst if s.get("id") != _id]
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump(lst, f, ensure_ascii=False, indent=2)
+            return self._json({"ok": True, "removed": n0 - len(lst)})
+        return self._json({"error": "not found"}, 404)
+
     def _post_signal(self):
         import datetime, time
         try:
@@ -591,11 +607,17 @@ class Handler(SimpleHTTPRequestHandler):
         url = (body.get("url") or "").strip()
         if not re.match(r"^https?://.+", url, re.I):
             return self._json({"error": "a valid http(s) URL is required"}, 400)
+        manual = []
+        if body.get("entityId"):
+            manual.append(body["entityId"])
+        if isinstance(body.get("entityIds"), list):
+            manual += body["entityIds"]
         meta = _enrich(url)
         sig = {"id": "u" + format(int(time.time() * 1000), "x"), "url": url,
                "title": meta.get("title") or url, "source": meta.get("source") or _domain(url),
                "date": meta.get("date") or datetime.date.today().isoformat(), "image": meta.get("image") or "",
                "category": (body.get("category") or "").strip(), "note": (body.get("note") or "")[:240],
+               "entityIds": list(dict.fromkeys(manual)),
                "submitted": True, "submittedAt": datetime.datetime.utcnow().isoformat() + "Z"}
         p = os.path.join(ROOT, "data", "submitted-signals.json")
         try:

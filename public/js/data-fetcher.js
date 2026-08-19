@@ -66,14 +66,20 @@ window.DATA = (function () {
       return (await res.json()).signals || [];
     } catch (e) { return []; }
   }
-  async function submitSignal(url, category) {
+  async function submitSignal(url, category, entityId) {
     const res = await fetch(`${base}/signals`, {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ url, category })
+      body: JSON.stringify({ url, category, entityId })
     });
     const j = await res.json();
     if (!res.ok || j.error) throw new Error(j.error || ("HTTP " + res.status));
     return j.signal;
+  }
+  async function deleteSignal(id) {
+    const res = await fetch(`${base}/signals?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || j.error) throw new Error(j.error || ("HTTP " + res.status));
+    return true;
   }
 
   /* Per-entity social listening (YouTube + Reddit) via proxy. */
@@ -110,5 +116,5 @@ window.DATA = (function () {
     return Math.max(-100, Math.min(100, s * 20));
   }
 
-  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchSocial, fetchSignals, submitSignal, fetchQuote, fetchOwnership, keywordSentiment };
+  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchSocial, fetchSignals, submitSignal, deleteSignal, fetchQuote, fetchOwnership, keywordSentiment };
 })();

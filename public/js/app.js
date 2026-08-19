@@ -148,8 +148,8 @@
   }
   function submittedItems() {
     return (S.submitted || []).map(s => ({
-      title: s.title, url: s.url, source: s.source, date: s.date, note: s.note,
-      category: s.category || guessCategory(s.title || ""),
+      id: s.id, title: s.title, url: s.url, source: s.source, date: s.date, note: s.note,
+      category: s.category || guessCategory(s.title || ""), manualIds: s.entityIds || [],
       sentiment: DATA.keywordSentiment((s.title || "") + " " + (s.note || "")), submitted: true
     }));
   }
@@ -158,6 +158,7 @@
   function renderAll(view) {
     S.view = view;
     FUSION.tagNewsToEntities(S.news, S.kb.entities);
+    S.news.forEach(n => { if (n.manualIds && n.manualIds.length) n.entityIds = [...new Set([...(n.entityIds || []), ...n.manualIds])]; });
     MAPVIEW.render(view.entities, S.news);
     MAPVIEW.focus(FILTERS.state.scope === "country" ? FILTERS.state.country : null, S.taxonomy);
     GRAPHVIEW.build(view.entities, view.relationships);
@@ -319,6 +320,7 @@
                 n.verified === true ? `<span class="chip badge-verified">sourced</span>` : "";
       const addedChip = n.submitted ? `<span class="chip" style="border-color:var(--accent-2);color:var(--accent-2)">＋ added</span>` : "";
       return `<div class="feed-item${n.submitted ? " submitted" : ""}">
+        ${n.submitted && n.id ? `<button class="feed-del" data-del="${esc(n.id)}" title="Remove submitted link">✕</button>` : ""}
         <a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.title)}</a>
         ${n.note ? `<div class="feed-sum">${esc(n.note)}</div>` : (n.summary ? `<div class="feed-sum">${esc(n.summary)}</div>` : "")}
         <div class="meta">
@@ -328,6 +330,7 @@
           <span class="chip">${esc(n.category || "—")}</span>${addedChip}${v}
         </div></div>`;
     }).join("");
+    el.querySelectorAll("[data-del]").forEach(b => b.onclick = (e) => { e.stopPropagation(); removeSignal(b.dataset.del); });
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
@@ -337,28 +340,47 @@
     const cat = $("aiCat").value;
     const msg = $("aiMsg");
     if (!/^https?:\/\/.+/i.test(url)) { msg.innerHTML = `<span class="bad">Enter a valid http(s) URL.</span>`; return; }
+    // resolve the optional manual entity picker
+    const entRaw = $("aiEntity").value.trim();
+    let entId = "";
+    if (entRaw) {
+      entId = S.nameIndex[entRaw.toLowerCase()] ||
+        (S.kb.entities.find(e => e.name.toLowerCase() === entRaw.toLowerCase() || (e.aliases || []).some(a => a.toLowerCase() === entRaw.toLowerCase())) || {}).id || "";
+      if (!entId) { msg.innerHTML = `<span class="bad">"${esc(entRaw)}" isn't a known entity — pick from the list or leave blank.</span>`; return; }
+    }
     msg.innerHTML = "fetching page &amp; connecting…";
     $("aiSubmit").disabled = true;
     try {
-      const sig = await DATA.submitSignal(url, cat);
+      const sig = await DATA.submitSignal(url, cat, entId || undefined);
       S.submitted = [sig, ...(S.submitted || []).filter(s => s.url !== sig.url)];
+      const manual = sig.entityIds && sig.entityIds.length ? sig.entityIds : (entId ? [entId] : []);
       const item = {
-        title: sig.title, url: sig.url, source: sig.source, date: sig.date, note: sig.note,
-        category: sig.category || guessCategory(sig.title || ""), submitted: true,
+        id: sig.id, title: sig.title, url: sig.url, source: sig.source, date: sig.date, note: sig.note,
+        category: sig.category || guessCategory(sig.title || ""), submitted: true, manualIds: manual,
         sentiment: DATA.keywordSentiment((sig.title || "") + " " + (sig.note || ""))
       };
       FUSION.tagNewsToEntities([item], S.kb.entities);   // auto-connect by name/alias
-      const names = (item.entityIds || []).map(nameOf);
+      item.entityIds = [...new Set([...(item.entityIds || []), ...manual])];
+      const names = item.entityIds.map(nameOf);
       S.news = [item, ...(S.news || []).filter(n => n.url !== item.url)];
       renderFeed(S.news);
-      if (S.focus && item.entityIds && item.entityIds.includes(S.focus)) renderFeedFocused(byId(S.focus));
+      if (S.focus && item.entityIds.includes(S.focus)) renderFeedFocused(byId(S.focus));
       msg.innerHTML = names.length
-        ? `<span class="ok">✓ Added — auto-connected to: ${names.slice(0, 8).map(esc).join(", ")}</span>`
-        : `<span class="ok">✓ Added to the feed. No known entity matched its title — add that company in Admin to connect it.</span>`;
-      $("aiUrl").value = "";
+        ? `<span class="ok">✓ Added — connected to: ${names.slice(0, 8).map(esc).join(", ")}</span>`
+        : `<span class="ok">✓ Added to the feed. No entity matched — use the "Connect to" box to link one.</span>`;
+      $("aiUrl").value = ""; $("aiEntity").value = "";
     } catch (e) {
       msg.innerHTML = `<span class="bad">Failed: ${esc(e.message)}</span>`;
     } finally { $("aiSubmit").disabled = false; }
+  }
+  async function removeSignal(id) {
+    if (!id || !confirm("Remove this submitted link?")) return;
+    try {
+      await DATA.deleteSignal(id);
+      S.submitted = (S.submitted || []).filter(s => s.id !== id);
+      S.news = (S.news || []).filter(n => n.id !== id);
+      renderFeed(S.news);
+    } catch (e) { alert("Delete failed: " + e.message); }
   }
 
   /* ---------- Search + focus mode ---------- */

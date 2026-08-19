@@ -21,20 +21,33 @@ export async function onRequest({ request, env }) {
     const url = (body.url || "").trim();
     if (!/^https?:\/\/.+/i.test(url)) return json({ error: "a valid http(s) URL is required" }, 400);
 
+    const manual = [];
+    if (body.entityId) manual.push(body.entityId);
+    if (Array.isArray(body.entityIds)) manual.push(...body.entityIds);
     const meta = await enrich(url);
     const sig = {
       id: "u" + Date.now().toString(36),
       url, title: meta.title || url, source: meta.source || domainOf(url),
       date: (meta.date || new Date().toISOString().slice(0, 10)),
       image: meta.image || "", category: (body.category || "").trim(),
-      note: (body.note || "").slice(0, 240), submitted: true,
-      submittedAt: new Date().toISOString()
+      note: (body.note || "").slice(0, 240), entityIds: [...new Set(manual)],
+      submitted: true, submittedAt: new Date().toISOString()
     };
     let list = [];
     try { const v = await store.get(KEY); list = v ? JSON.parse(v) : []; } catch (e) {}
     list = [sig, ...list.filter(s => s.url !== url)].slice(0, 200); // dedupe by url, cap 200
     await store.put(KEY, JSON.stringify(list));
     return json({ signal: sig });
+  }
+  if (request.method === "DELETE") {
+    if (!store) return json({ error: "KV not bound" }, 501);
+    const id = new URL(request.url).searchParams.get("id");
+    if (!id) return json({ error: "id required" }, 400);
+    let list = [];
+    try { const v = await store.get(KEY); list = v ? JSON.parse(v) : []; } catch (e) {}
+    const next = list.filter(s => s.id !== id);
+    await store.put(KEY, JSON.stringify(next));
+    return json({ ok: true, removed: list.length - next.length });
   }
   return json({ error: "method not allowed" }, 405);
 }
