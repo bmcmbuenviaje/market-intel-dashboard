@@ -486,27 +486,24 @@ def api_yt_channel(qs):
         return {"error": "channelId required"}
     if not key:
         return {"configured": False}
-    url = "https://www.googleapis.com/youtube/v3/search?" + urlencode({
-        "part": "snippet", "type": "video", "order": "date", "maxResults": "5", "channelId": cid, "key": key})
+    base = "https://www.googleapis.com/youtube/v3/search?" + urlencode({
+        "part": "snippet", "type": "video", "channelId": cid, "key": key})
+    def q(extra):
+        try:
+            status, body = http_get(base + "&" + extra, retries=0, timeout=8)
+            return json.loads(body) if status == 200 else {"items": []}
+        except Exception:
+            return {"items": []}
     try:
-        status, body = http_get(url, retries=0, timeout=8)
-        if status != 200:
-            return {"configured": True, "error": f"yt {status}"}
-        d = json.loads(body)
-        vids = []
-        for i in d.get("items", []):
-            vid = (i.get("id") or {}).get("videoId")
-            if not vid:
-                continue
-            sn = i.get("snippet", {})
-            vids.append({"videoId": vid, "title": _sdecode(sn.get("title", "")),
-                         "live": sn.get("liveBroadcastContent") == "live", "publishedAt": sn.get("publishedAt")})
-        live = next((v for v in vids if v["live"]), None)
-        latest = next((v for v in vids if not v["live"]), vids[0] if vids else None)
-        ct = (d.get("items") or [{}])[0].get("snippet", {}).get("channelTitle", "")
-        return {"configured": True, "channelTitle": ct,
-                "live": {"videoId": live["videoId"], "title": live["title"]} if live else None,
-                "latest": {"videoId": latest["videoId"], "title": latest["title"], "publishedAt": latest["publishedAt"]} if latest else None}
+        live_d = q("eventType=live&maxResults=1")
+        latest_d = q("order=date&maxResults=3")
+        live_item = next((i for i in live_d.get("items", []) if (i.get("id") or {}).get("videoId")), None)
+        uploads = [i for i in latest_d.get("items", []) if (i.get("id") or {}).get("videoId")]
+        latest_item = next((i for i in uploads if i.get("snippet", {}).get("liveBroadcastContent") == "none"), uploads[0] if uploads else None)
+        ct = ((live_item or latest_item or {}).get("snippet", {}) or {}).get("channelTitle", "")
+        return {"configured": True, "channelTitle": ct or "",
+                "live": {"videoId": live_item["id"]["videoId"], "title": _sdecode(live_item["snippet"]["title"])} if live_item else None,
+                "latest": {"videoId": latest_item["id"]["videoId"], "title": _sdecode(latest_item["snippet"]["title"]), "publishedAt": latest_item["snippet"]["publishedAt"]} if latest_item else None}
     except Exception as e:
         return {"configured": True, "error": str(e)}
 
