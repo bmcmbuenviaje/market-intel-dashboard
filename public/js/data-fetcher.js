@@ -82,6 +82,21 @@ window.DATA = (function () {
     return true;
   }
 
+  /* CRM overlay (status/owner/notes per entity), persisted in KV. */
+  async function fetchCRM() {
+    try {
+      const res = await fetch(`${base}/crm`, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) return {};
+      return (await res.json()).crm || {};
+    } catch (e) { return {}; }
+  }
+  async function saveCRM(rec) {
+    const res = await fetch(`${base}/crm`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(rec) });
+    const j = await res.json();
+    if (!res.ok || j.error) throw new Error(j.error || ("HTTP " + res.status));
+    return j.crm;
+  }
+
   /* Per-entity social listening (YouTube + Reddit) via proxy. */
   async function fetchSocial(name) {
     const res = await fetch(`${base}/social?q=${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(12000) });
@@ -116,5 +131,5 @@ window.DATA = (function () {
     return Math.max(-100, Math.min(100, s * 20));
   }
 
-  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchSocial, fetchSignals, submitSignal, deleteSignal, fetchQuote, fetchOwnership, keywordSentiment };
+  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchSocial, fetchSignals, submitSignal, deleteSignal, fetchCRM, saveCRM, fetchQuote, fetchOwnership, keywordSentiment };
 })();

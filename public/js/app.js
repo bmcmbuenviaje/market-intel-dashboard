@@ -3,8 +3,10 @@
   const S = {
     taxonomy: null, kb: null, news: [], sparkChart: null, reqToken: 0,
     tab: "hotlist", view: null, entNewsToken: 0, socialToken: 0,
-    focus: null, nameIndex: {}, submitted: []
+    focus: null, nameIndex: {}, submitted: [], crm: {}
   };
+  const CRM_STATUS = [["", "—"], ["prospect", "Prospect"], ["contacted", "Contacted"], ["pitched", "Pitched"], ["won", "Won"], ["lost", "Lost"]];
+  const crmLabel = (v) => (CRM_STATUS.find(s => s[0] === v) || ["", ""])[1];
 
   /* ---- watchlist (localStorage) ---- */
   function getWatch() { try { return JSON.parse(localStorage.getItem("mi_watchlist")) || []; } catch (e) { return []; } }
@@ -37,6 +39,7 @@
     buildSearchIndex();
     wireEvents();
     DATA.fetchSignals().then(s => { S.submitted = s || []; if (S.view) renderAll(S.view); }).catch(() => {});
+    DATA.fetchCRM().then(c => { S.crm = c || {}; if (S.view) renderIntel(); }).catch(() => {});
 
     // default scope
     Object.assign(FILTERS.state, {
@@ -229,9 +232,11 @@
   function card(t, cls) {
     const watched = isWatched(t.id);
     const scoreHtml = t.score != null ? `<span class="score">${t.score}</span>` : "";
+    const st = (S.crm[t.id] || {}).status || "";
+    const stChip = st ? `<span class="chip crm-${st}">${crmLabel(st)}</span>` : "";
     return `<div class="bd-card ${cls}" data-id="${t.id}">
         <div class="top">
-          <span><strong>${t.name}</strong> <span class="muted">· ${t.category} · ${t.country}</span></span>
+          <span><strong>${t.name}</strong> <span class="muted">· ${t.category} · ${t.country}</span> ${stChip}</span>
           <span>${scoreHtml}
             <button class="star ${watched ? "" : "off"}" data-star="${t.id}" title="Watchlist">${watched ? "★" : "☆"}</button>
           </span>
@@ -504,6 +509,7 @@
       ${e.website ? kv("Website", `<a href="${e.website}" target="_blank" rel="noopener">${e.website}</a>`) : ""}
       ${parent ? kv("Parent", `<a data-nav="${parent.id}">${parent.name}</a>`) : ""}
       ${linksRow(e)}
+      ${crmEditor(e)}
       ${relGroup("Owns / subsidiaries", owns)}
       ${relGroup("Sister brands", siblings)}
       ${relGroup("Competitors", competes)}
@@ -531,6 +537,17 @@
       a.onclick = () => selectEntity(a.getAttribute("data-nav")));
     const ps = document.getElementById("profStar");
     if (ps) ps.onclick = () => { toggleWatch(e.id); selectEntity(e.id); renderIntel(); };
+    const cs = document.getElementById("crmSave");
+    if (cs) cs.onclick = async () => {
+      const rec = { id: e.id, status: $("crmStatus").value, owner: $("crmOwner").value.trim(), notes: $("crmNotes").value.trim() };
+      $("crmMsg").textContent = "saving…";
+      try {
+        const saved = await DATA.saveCRM(rec);
+        if (saved) S.crm[e.id] = saved; else delete S.crm[e.id];
+        $("crmMsg").innerHTML = `<span class="senti-pos">✓ saved</span>`;
+        renderIntel();
+      } catch (err) { $("crmMsg").innerHTML = `<span class="senti-neg">${esc(err.message)}</span>`; }
+    };
     drawSpark(news);
     loadEntityNews(e, news);
     loadEntitySocial(e);
@@ -567,6 +584,16 @@
     parts.push(`<a href="${news}" target="_blank" rel="noopener">News ↗</a>`);
     parts.push(`<a href="${li}" target="_blank" rel="noopener">LinkedIn ↗</a>`);
     return `<div class="kv"><b>Links</b><span>${parts.join(" · ")}</span></div>`;
+  }
+  function crmEditor(e) {
+    const c = S.crm[e.id] || {};
+    return `<div class="rel-group"><h4>BD status ${c.updatedAt ? `<span class="muted" style="font-weight:400">· updated ${esc((c.updatedAt || "").slice(0, 10))}</span>` : ""}</h4>
+      <div class="crm">
+        <select id="crmStatus">${CRM_STATUS.map(([v, l]) => `<option value="${v}"${c.status === v ? " selected" : ""}>${l}</option>`).join("")}</select>
+        <input id="crmOwner" type="text" placeholder="Owner / account exec" value="${esc(c.owner || "")}" />
+        <textarea id="crmNotes" rows="2" placeholder="BD notes…">${esc(c.notes || "")}</textarea>
+        <div class="crm-row"><button class="btn" id="crmSave">Save</button><span id="crmMsg" class="muted"></span></div>
+      </div></div>`;
   }
   /* Per-entity recent news: paint feed-matched articles instantly, then augment
      with a live Google News search for that entity. */

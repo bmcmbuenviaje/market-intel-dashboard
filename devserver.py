@@ -563,6 +563,13 @@ class Handler(SimpleHTTPRequestHandler):
                 except Exception:
                     sigs = []
                 return self._json({"signals": sigs})
+            if name == "crm":
+                try:
+                    with open(os.path.join(ROOT, "data", "crm.json"), encoding="utf-8") as f:
+                        crm = json.load(f)
+                except Exception:
+                    crm = {}
+                return self._json({"crm": crm})
             fn = ROUTES.get(name)
             if not fn:
                 return self._json({"error": "unknown endpoint"}, 404)
@@ -574,7 +581,38 @@ class Handler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == "/api/kb":
             return self._save_kb()
+        if parsed.path == "/api/crm":
+            return self._save_crm()
         return self._json({"error": "not found"}, 404)
+
+    def _save_crm(self):
+        import datetime
+        try:
+            n = int(self.headers.get("Content-Length", "0"))
+            body = json.loads(self.rfile.read(n) or b"{}")
+        except Exception as e:
+            return self._json({"error": f"invalid JSON: {e}"}, 400)
+        _id = (body.get("id") or "").strip()
+        if not _id:
+            return self._json({"error": "id required"}, 400)
+        p = os.path.join(ROOT, "data", "crm.json")
+        try:
+            with open(p, encoding="utf-8") as f:
+                m = json.load(f)
+        except Exception:
+            m = {}
+        cur = m.get(_id, {})
+        rec = {"status": str(body.get("status", cur.get("status", "")) or ""),
+               "owner": str(body.get("owner", cur.get("owner", "")) or "")[:60],
+               "notes": str(body.get("notes", cur.get("notes", "")) or "")[:2000],
+               "updatedAt": datetime.datetime.utcnow().isoformat() + "Z"}
+        if not rec["status"] and not rec["owner"] and not rec["notes"]:
+            m.pop(_id, None)
+        else:
+            m[_id] = rec
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(m, f, ensure_ascii=False, indent=2)
+        return self._json({"ok": True, "crm": m.get(_id)})
 
     def do_POST(self):
         if urlparse(self.path).path == "/api/signals":
