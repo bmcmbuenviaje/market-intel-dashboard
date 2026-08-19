@@ -3,6 +3,15 @@
    { action:"sentiment", text }                  -> { score }
    Uses Cloudflare Workers AI (free tier). Needs the [ai] binding (env.AI) in
    wrangler.toml. Returns configured:false if the binding is absent (e.g. local dev). */
+// tried in order; first that returns text wins (guards against model deprecations)
+const MODELS = [
+  "@cf/meta/llama-3.2-3b-instruct",
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "@cf/meta/llama-3.1-8b-instruct-fast",
+  "@cf/mistralai/mistral-small-3.1-24b-instruct",
+  "@cf/meta/llama-3.2-1b-instruct"
+];
+
 export async function onRequest({ request, env }) {
   if (request.method !== "POST") return json({ error: "POST only" }, 405);
   if (!env.AI) return json({ configured: false });
@@ -21,13 +30,16 @@ export async function onRequest({ request, env }) {
     if (!texts.length) return json({ summary: "", sentiment: 0 });
     const prompt = `You are a market-intelligence analyst for a business-development team. Based ONLY on these recent headlines about "${name}", write ONE concise sentence (max 32 words) on what is happening with them right now and why a BD team should care. Do not add preamble.\n\nHeadlines:\n- ${texts.join("\n- ")}`;
     let summary = "", dbg = "";
-    try {
-      const r = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { max_tokens: 160, messages: [{ role: "user", content: prompt }] });
-      summary = String((r && (r.response ?? (r.result && r.result.response) ?? r.text ?? (typeof r === "string" ? r : ""))) || "").trim().replace(/^"(.*)"$/, "$1");
-      if (!summary) dbg = "shape:" + JSON.stringify(r).slice(0, 220);
-    } catch (e) { dbg = "err:" + String(e).slice(0, 220); }
+    for (const m of MODELS) {
+      try {
+        const r = await env.AI.run(m, { max_tokens: 160, messages: [{ role: "user", content: prompt }] });
+        const s = String((r && (r.response ?? (r.result && r.result.response) ?? r.text ?? (typeof r === "string" ? r : ""))) || "").trim().replace(/^"(.*)"$/, "$1");
+        if (s) { summary = s; break; }
+        dbg = "empty:" + m;
+      } catch (e) { dbg = "err:" + m + ":" + String(e).slice(0, 120); }
+    }
     const senti = await sentiment(env, texts.join(". ")).catch(() => 0);
-    return json({ summary, sentiment: senti, _debug: dbg });
+    return json({ summary, sentiment: senti, _debug: summary ? undefined : dbg });
   }
   return json({ error: "unknown action" }, 400);
 }
