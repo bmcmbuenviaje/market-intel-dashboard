@@ -58,6 +58,24 @@ window.DATA = (function () {
     return (await res.json()).articles || [];
   }
 
+  /* User-submitted insight links (persisted in KV). */
+  async function fetchSignals() {
+    try {
+      const res = await fetch(`${base}/signals`, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) return [];
+      return (await res.json()).signals || [];
+    } catch (e) { return []; }
+  }
+  async function submitSignal(url, category) {
+    const res = await fetch(`${base}/signals`, {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ url, category })
+    });
+    const j = await res.json();
+    if (!res.ok || j.error) throw new Error(j.error || ("HTTP " + res.status));
+    return j.signal;
+  }
+
   /* Per-entity social listening (YouTube + Reddit) via proxy. */
   async function fetchSocial(name) {
     const res = await fetch(`${base}/social?q=${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(12000) });
@@ -92,5 +110,5 @@ window.DATA = (function () {
     return Math.max(-100, Math.min(100, s * 20));
   }
 
-  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchSocial, fetchQuote, fetchOwnership, keywordSentiment };
+  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchSocial, fetchSignals, submitSignal, fetchQuote, fetchOwnership, keywordSentiment };
 })();

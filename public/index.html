@@ -95,7 +95,15 @@
       </section>
 
       <section class="panel feed-panel">
-        <div class="panel-head">📰 Live Signal Feed</div>
+        <div class="panel-head">📰 Live Signal Feed
+          <span class="graph-actions"><button id="btnAddInsight" class="mini">＋ Add link</button></span>
+        </div>
+        <div id="addInsight" class="add-insight hidden">
+          <input id="aiUrl" type="text" placeholder="Paste a news article / social post URL…" />
+          <select id="aiCat"><option value="">auto</option></select>
+          <button id="aiSubmit" class="btn">Connect</button>
+          <div id="aiMsg" class="ai-msg"></div>
+        </div>
         <div id="feed" class="feed"></div>
       </section>
     </main>
@@ -105,13 +113,13 @@
   <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
-  <script src="js/config.js?v=7"></script>
-  <script src="js/gate.js?v=7"></script>
-  <script src="js/data-fetcher.js?v=7"></script>
-  <script src="js/filters.js?v=7"></script>
-  <script src="js/map.js?v=7"></script>
-  <script src="js/graph.js?v=7"></script>
-  <script src="js/fusion.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/config.js?v=8"></script>
+  <script src="js/gate.js?v=8"></script>
+  <script src="js/data-fetcher.js?v=8"></script>
+  <script src="js/filters.js?v=8"></script>
+  <script src="js/map.js?v=8"></script>
+  <script src="js/graph.js?v=8"></script>
+  <script src="js/fusion.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>

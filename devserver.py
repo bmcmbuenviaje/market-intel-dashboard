@@ -508,6 +508,38 @@ def api_yt_channel(qs):
         return {"configured": True, "error": str(e)}
 
 
+def _domain(url):
+    try:
+        from urllib.parse import urlparse as _up
+        return _up(url).hostname.replace("www.", "", 1)
+    except Exception:
+        return ""
+
+def _enrich(url):
+    try:
+        status, body = http_get(url, headers={"User-Agent": BROWSER_UA, "Accept": "text/html,*/*"}, retries=0, timeout=9)
+        if status != 200:
+            return {}
+        html = body.decode("utf-8", "ignore")[:200000]
+        def meta(prop):
+            p = re.escape(prop)
+            a = re.search(rf'<meta[^>]+(?:property|name)=["\']{p}["\'][^>]+content=["\']([^"\']*)["\']', html, re.I)
+            b = re.search(rf'<meta[^>]+content=["\']([^"\']*)["\'][^>]+(?:property|name)=["\']{p}["\']', html, re.I)
+            return _clean(a.group(1) if a else (b.group(1) if b else ""))
+        title = meta("og:title") or meta("twitter:title")
+        if not title:
+            m = re.search(r"<title[^>]*>([\s\S]*?)</title>", html, re.I)
+            title = _clean(m.group(1)) if m else ""
+        import datetime
+        raw = meta("article:published_time") or meta("article:modified_time") or meta("datePublished") or ""
+        ts = _parse_dt(raw)
+        date = datetime.datetime.utcfromtimestamp(ts).date().isoformat() if ts else ""
+        return {"title": title, "source": meta("og:site_name") or _domain(url), "date": date,
+                "image": meta("og:image") or meta("twitter:image")}
+    except Exception:
+        return {}
+
+
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,
           "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news,
           "entity-news": api_entity_news, "social": api_social, "yt-channel": api_yt_channel}
@@ -523,6 +555,14 @@ class Handler(SimpleHTTPRequestHandler):
             name = parsed.path[len("/api/"):]
             if name == "kb":
                 return self._serve_kb()
+            if name == "signals":
+                p = os.path.join(ROOT, "data", "submitted-signals.json")
+                try:
+                    with open(p, encoding="utf-8") as f:
+                        sigs = json.load(f)
+                except Exception:
+                    sigs = []
+                return self._json({"signals": sigs})
             fn = ROUTES.get(name)
             if not fn:
                 return self._json({"error": "unknown endpoint"}, 404)
@@ -535,6 +575,38 @@ class Handler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/kb":
             return self._save_kb()
         return self._json({"error": "not found"}, 404)
+
+    def do_POST(self):
+        if urlparse(self.path).path == "/api/signals":
+            return self._post_signal()
+        return self._json({"error": "not found"}, 404)
+
+    def _post_signal(self):
+        import datetime, time
+        try:
+            n = int(self.headers.get("Content-Length", "0"))
+            body = json.loads(self.rfile.read(n) or b"{}")
+        except Exception as e:
+            return self._json({"error": f"invalid JSON: {e}"}, 400)
+        url = (body.get("url") or "").strip()
+        if not re.match(r"^https?://.+", url, re.I):
+            return self._json({"error": "a valid http(s) URL is required"}, 400)
+        meta = _enrich(url)
+        sig = {"id": "u" + format(int(time.time() * 1000), "x"), "url": url,
+               "title": meta.get("title") or url, "source": meta.get("source") or _domain(url),
+               "date": meta.get("date") or datetime.date.today().isoformat(), "image": meta.get("image") or "",
+               "category": (body.get("category") or "").strip(), "note": (body.get("note") or "")[:240],
+               "submitted": True, "submittedAt": datetime.datetime.utcnow().isoformat() + "Z"}
+        p = os.path.join(ROOT, "data", "submitted-signals.json")
+        try:
+            with open(p, encoding="utf-8") as f:
+                lst = json.load(f)
+        except Exception:
+            lst = []
+        lst = ([sig] + [s for s in lst if s.get("url") != url])[:200]
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(lst, f, ensure_ascii=False, indent=2)
+        return self._json({"signal": sig})
 
     # local KV stand-in: read/write public/data/knowledge-base.json
     def _serve_kb(self):

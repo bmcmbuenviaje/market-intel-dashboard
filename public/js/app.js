@@ -3,7 +3,7 @@
   const S = {
     taxonomy: null, kb: null, news: [], sparkChart: null, reqToken: 0,
     tab: "targets", view: null, entNewsToken: 0, socialToken: 0,
-    focus: null, nameIndex: {}
+    focus: null, nameIndex: {}, submitted: []
   };
 
   /* ---- watchlist (localStorage) ---- */
@@ -36,6 +36,7 @@
     populateFilterOptions();
     buildSearchIndex();
     wireEvents();
+    DATA.fetchSignals().then(s => { S.submitted = s || []; if (S.view) renderAll(S.view); }).catch(() => {});
 
     // default scope
     Object.assign(FILTERS.state, {
@@ -81,6 +82,10 @@
       const o = document.createElement("option"); o.value = c.id; o.textContent = `${c.icon} ${c.label}`;
       cat.appendChild(o);
     });
+    const aiCat = $("aiCat");
+    if (aiCat) S.taxonomy.categories.forEach(c => {
+      const o = document.createElement("option"); o.value = c.id; o.textContent = c.label; aiCat.appendChild(o);
+    });
     const reg = $("fRegion");
     S.taxonomy.regions.filter(r => r.id !== "global").forEach(r => {
       const o = document.createElement("option"); o.value = r.id; o.textContent = r.label; reg.appendChild(o);
@@ -107,6 +112,9 @@
     $("fCountry").onchange = (e) => { FILTERS.state.country = e.target.value; refresh(); };
     $("fCategory").onchange = (e) => { FILTERS.state.category = e.target.value; refresh(); };
     $("fWindow").onchange = (e) => { FILTERS.state.windowDays = +e.target.value; refresh(); };
+    $("btnAddInsight").onclick = () => { $("addInsight").classList.toggle("hidden"); $("aiUrl").focus(); };
+    $("aiSubmit").onclick = submitInsight;
+    $("aiUrl").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); submitInsight(); } });
     $("fSearch").addEventListener("change", () => doSearch($("fSearch").value));
     $("fSearch").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); doSearch($("fSearch").value); } });
     $("btnRefresh").onclick = refresh;
@@ -138,6 +146,14 @@
     });
     return out;
   }
+  function submittedItems() {
+    return (S.submitted || []).map(s => ({
+      title: s.title, url: s.url, source: s.source, date: s.date, note: s.note,
+      category: s.category || guessCategory(s.title || ""),
+      sentiment: DATA.keywordSentiment((s.title || "") + " " + (s.note || "")), submitted: true
+    }));
+  }
+  function baseNews(view) { return seedSignals(view.visibleIds).concat(submittedItems()); }
 
   function renderAll(view) {
     S.view = view;
@@ -156,7 +172,7 @@
     const token = ++S.reqToken; // guards against stale async renders after a filter change
 
     // 1) Curated layer paints instantly — never blocked by a slow/failing live feed.
-    S.news = seedSignals(view.visibleIds);
+    S.news = baseNews(view);
     renderAll(view);
     status(`${view.entities.length} entities in view · curated layer loaded`);
     loadCommodities();
@@ -176,7 +192,7 @@
       if (feedR.status === "fulfilled") live = live.concat(feedR.value.map(mk));
       if (gdeltR.status === "fulfilled") live = live.concat(gdeltR.value.map(mk));
       const seenU = new Set(); live = live.filter(a => a.url && !seenU.has(a.url) && (seenU.add(a.url), true));
-      S.news = seedSignals(view.visibleIds).concat(live);
+      S.news = baseNews(view).concat(live);
       renderAll(view);
       const ok = feedR.status === "fulfilled" || gdeltR.status === "fulfilled";
       status(ok ? `${live.length} live articles · ${view.entities.length} entities in view`
@@ -301,18 +317,49 @@
       const sc = n.sentiment > 5 ? "senti-pos" : n.sentiment < -5 ? "senti-neg" : "senti-neu";
       const v = n.verified === false ? `<span class="chip badge-unverified">unverified</span>` :
                 n.verified === true ? `<span class="chip badge-verified">sourced</span>` : "";
-      return `<div class="feed-item">
+      const addedChip = n.submitted ? `<span class="chip" style="border-color:var(--accent-2);color:var(--accent-2)">＋ added</span>` : "";
+      return `<div class="feed-item${n.submitted ? " submitted" : ""}">
         <a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.title)}</a>
-        ${n.summary ? `<div class="feed-sum">${esc(n.summary)}</div>` : ""}
+        ${n.note ? `<div class="feed-sum">${esc(n.note)}</div>` : (n.summary ? `<div class="feed-sum">${esc(n.summary)}</div>` : "")}
         <div class="meta">
           <span class="chip">${esc(n.source || n.domain || "—")}</span>
           <span>${esc(n.date || "")}</span>
           <span class="${sc}">${n.sentiment >= 0 ? "+" : ""}${n.sentiment}</span>
-          <span class="chip">${esc(n.category || "—")}</span>${v}
+          <span class="chip">${esc(n.category || "—")}</span>${addedChip}${v}
         </div></div>`;
     }).join("");
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+  /* ---------- Add insight (submit a link → enrich + auto-connect) ---------- */
+  async function submitInsight() {
+    const url = $("aiUrl").value.trim();
+    const cat = $("aiCat").value;
+    const msg = $("aiMsg");
+    if (!/^https?:\/\/.+/i.test(url)) { msg.innerHTML = `<span class="bad">Enter a valid http(s) URL.</span>`; return; }
+    msg.innerHTML = "fetching page &amp; connecting…";
+    $("aiSubmit").disabled = true;
+    try {
+      const sig = await DATA.submitSignal(url, cat);
+      S.submitted = [sig, ...(S.submitted || []).filter(s => s.url !== sig.url)];
+      const item = {
+        title: sig.title, url: sig.url, source: sig.source, date: sig.date, note: sig.note,
+        category: sig.category || guessCategory(sig.title || ""), submitted: true,
+        sentiment: DATA.keywordSentiment((sig.title || "") + " " + (sig.note || ""))
+      };
+      FUSION.tagNewsToEntities([item], S.kb.entities);   // auto-connect by name/alias
+      const names = (item.entityIds || []).map(nameOf);
+      S.news = [item, ...(S.news || []).filter(n => n.url !== item.url)];
+      renderFeed(S.news);
+      if (S.focus && item.entityIds && item.entityIds.includes(S.focus)) renderFeedFocused(byId(S.focus));
+      msg.innerHTML = names.length
+        ? `<span class="ok">✓ Added — auto-connected to: ${names.slice(0, 8).map(esc).join(", ")}</span>`
+        : `<span class="ok">✓ Added to the feed. No known entity matched its title — add that company in Admin to connect it.</span>`;
+      $("aiUrl").value = "";
+    } catch (e) {
+      msg.innerHTML = `<span class="bad">Failed: ${esc(e.message)}</span>`;
+    } finally { $("aiSubmit").disabled = false; }
+  }
 
   /* ---------- Search + focus mode ---------- */
   function buildSearchIndex() {
