@@ -17,7 +17,13 @@
     .tile .bar strong { font-size: 13px; }
     .tile .vid { position: relative; aspect-ratio: 16/9; background: #000; }
     .tile iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-    .tile .act { margin-left: auto; display: flex; gap: 6px; }
+    .tile .act { display: flex; gap: 6px; }
+    .badge { font-size: 11px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+    .badge.live { color: #fff; background: #ef4444; border-color: #ef4444; font-weight: 700; }
+    .badge.latest { color: var(--muted); }
+    .tile .bar .act { margin-left: 6px; }
+    .tile .bar { justify-content: flex-start; }
+    .tile .bar > strong { margin-right: auto; }
     .lnk { font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
     .lnk:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
     .links { margin-top: 20px; }
@@ -63,22 +69,48 @@
     let cfg = { channels: [], newsLinks: [], socialLinks: [] };
     try { cfg = await (await fetch("data/streams.json")).json(); } catch (e) {}
     const grid = document.getElementById("grid");
-    const live = (cfg.channels || []).filter(c => c.channelId || c.videoId);
-    if (!live.length) { grid.innerHTML = `<div class="empty">Live channels aren't configured yet.</div>`; }
-    grid.innerHTML = live.map(c => {
-      const src = c.videoId
-        ? `https://www.youtube.com/embed/${c.videoId}?autoplay=1&mute=1&playsinline=1`
-        : `https://www.youtube.com/embed/live_stream?channel=${c.channelId}&autoplay=1&mute=1&playsinline=1`;
-      const open = c.videoId ? `https://www.youtube.com/watch?v=${c.videoId}`
-        : `https://www.youtube.com/channel/${c.channelId}/live`;
-      return `<div class="tile"><div class="bar"><strong>${esc(c.name)}</strong>
-        <span class="act"><a class="lnk" href="${open}" target="_blank" rel="noopener">Open ↗</a></span></div>
-        <div class="vid"><iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div></div>`;
-    }).join("");
+    const chans = (cfg.channels || []).filter(c => c.channelId || c.videoId);
+    if (!chans.length) grid.innerHTML = `<div class="empty">No channels configured.</div>`;
+    else grid.innerHTML = chans.map((c, i) => `
+      <div class="tile"><div class="bar"><strong>${esc(c.name)}</strong>
+        <span class="badge" id="badge-${i}">…</span>
+        <span class="act"><a class="lnk" id="open-${i}" href="https://www.youtube.com/channel/${esc(c.channelId || "")}" target="_blank" rel="noopener">Open ↗</a></span></div>
+        <div class="vid" id="vid-${i}"></div></div>`).join("");
+    chans.forEach((c, i) => loadChannel(c, i));
+
     const chip = (l) => `<a class="chipL" href="${l.url}" target="_blank" rel="noopener">${esc(l.name)} ↗</a>`;
     document.getElementById("newsLinks").innerHTML = (cfg.newsLinks || []).map(chip).join("");
     document.getElementById("socialLinks").innerHTML = (cfg.socialLinks || []).map(chip).join("");
   }, { once: true });
+
+  function frame(v) { return `<iframe src="https://www.youtube.com/embed/${v}?autoplay=1&mute=1&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`; }
+  function liveStream(ch) { return `<iframe src="https://www.youtube.com/embed/live_stream?channel=${ch}&autoplay=1&mute=1&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`; }
+  function fmtDate(iso) { if (!iso) return ""; const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }); }
+
+  async function loadChannel(c, i) {
+    const vid = document.getElementById("vid-" + i), badge = document.getElementById("badge-" + i), open = document.getElementById("open-" + i);
+    if (c.videoId) { vid.innerHTML = frame(c.videoId); badge.textContent = ""; open.href = "https://www.youtube.com/watch?v=" + c.videoId; return; }
+    if (!c.channelId) return;
+    try {
+      const d = await (await fetch(`/api/yt-channel?channelId=${encodeURIComponent(c.channelId)}`)).json();
+      if (d.configured && d.live) {
+        vid.innerHTML = frame(d.live.videoId);
+        badge.className = "badge live"; badge.innerHTML = "🔴 LIVE";
+        open.href = "https://www.youtube.com/watch?v=" + d.live.videoId;
+      } else if (d.configured && d.latest) {
+        vid.innerHTML = frame(d.latest.videoId);
+        badge.className = "badge latest"; badge.innerHTML = "▶ Latest upload · " + esc(fmtDate(d.latest.publishedAt));
+        open.href = "https://www.youtube.com/watch?v=" + d.latest.videoId;
+      } else {
+        vid.innerHTML = liveStream(c.channelId);           // no YouTube key: best-effort live embed
+        badge.className = "badge latest"; badge.innerHTML = "live if on air";
+        open.href = `https://www.youtube.com/channel/${c.channelId}/live`;
+      }
+    } catch (e) {
+      vid.innerHTML = liveStream(c.channelId);
+      badge.className = "badge latest"; badge.textContent = "—";
+    }
+  }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
   </script>
 </body>

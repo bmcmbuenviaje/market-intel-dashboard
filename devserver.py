@@ -479,9 +479,41 @@ def api_news(qs):
     return {"articles": res[:80], "sources": len(feeds), "count": len(res[:80])}
 
 
+def api_yt_channel(qs):
+    cid = (qs.get("channelId", [""])[0] or "").strip()
+    key = os.environ.get("YOUTUBE_API_KEY")
+    if not cid:
+        return {"error": "channelId required"}
+    if not key:
+        return {"configured": False}
+    url = "https://www.googleapis.com/youtube/v3/search?" + urlencode({
+        "part": "snippet", "type": "video", "order": "date", "maxResults": "5", "channelId": cid, "key": key})
+    try:
+        status, body = http_get(url, retries=0, timeout=8)
+        if status != 200:
+            return {"configured": True, "error": f"yt {status}"}
+        d = json.loads(body)
+        vids = []
+        for i in d.get("items", []):
+            vid = (i.get("id") or {}).get("videoId")
+            if not vid:
+                continue
+            sn = i.get("snippet", {})
+            vids.append({"videoId": vid, "title": _sdecode(sn.get("title", "")),
+                         "live": sn.get("liveBroadcastContent") == "live", "publishedAt": sn.get("publishedAt")})
+        live = next((v for v in vids if v["live"]), None)
+        latest = next((v for v in vids if not v["live"]), vids[0] if vids else None)
+        ct = (d.get("items") or [{}])[0].get("snippet", {}).get("channelTitle", "")
+        return {"configured": True, "channelTitle": ct,
+                "live": {"videoId": live["videoId"], "title": live["title"]} if live else None,
+                "latest": {"videoId": latest["videoId"], "title": latest["title"], "publishedAt": latest["publishedAt"]} if latest else None}
+    except Exception as e:
+        return {"configured": True, "error": str(e)}
+
+
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,
           "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news,
-          "entity-news": api_entity_news, "social": api_social}
+          "entity-news": api_entity_news, "social": api_social, "yt-channel": api_yt_channel}
 
 
 class Handler(SimpleHTTPRequestHandler):

@@ -11,6 +11,7 @@
     { "source": "Rappler Business", "url": "https://www.rappler.com/business/feed/" },
     { "source": "Yahoo Finance", "url": "https://finance.yahoo.com/news/rssindex" },
     { "source": "Google News PH", "url": "https://news.google.com/rss/search?q=Philippines%20(business%20OR%20economy%20OR%20markets%20OR%20company)%20when:2d&hl=en-PH&gl=PH&ceid=PH:en" },
-    { "source": "Google News (ABS-CBN)", "url": "https://news.google.com/rss/search?q=site:news.abs-cbn.com%20when:3d&hl=en-PH&gl=PH&ceid=PH:en" }
+    { "source": "Google News (ABS-CBN)", "url": "https://news.google.com/rss/search?q=site:news.abs-cbn.com%20when:3d&hl=en-PH&gl=PH&ceid=PH:en" },
+    { "source": "Google News (InsiderPH)", "url": "https://news.google.com/rss/search?q=site:insiderph.com&hl=en-PH&gl=PH&ceid=PH:en" }
   ]
 }
