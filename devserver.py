@@ -615,8 +615,16 @@ class Handler(SimpleHTTPRequestHandler):
         return self._json({"ok": True, "crm": m.get(_id)})
 
     def do_POST(self):
-        if urlparse(self.path).path == "/api/signals":
+        path = urlparse(self.path).path
+        if path == "/api/signals":
             return self._post_signal()
+        if path == "/api/ai":
+            # Workers AI only runs on Cloudflare; dev returns not-configured.
+            try:
+                n = int(self.headers.get("Content-Length", "0")); self.rfile.read(n)
+            except Exception:
+                pass
+            return self._json({"configured": False})
         return self._json({"error": "not found"}, 404)
 
     def do_DELETE(self):

@@ -82,6 +82,18 @@ window.DATA = (function () {
     return true;
   }
 
+  /* Cloudflare Workers AI: weekly summary + sentiment for an entity's headlines. */
+  async function aiSummary(name, texts) {
+    try {
+      const res = await fetch(`${base}/ai`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "summary", name, texts }), signal: AbortSignal.timeout(20000)
+      });
+      if (!res.ok) return { configured: false };
+      return res.json();
+    } catch (e) { return { configured: false, error: String(e) }; }
+  }
+
   /* CRM overlay (status/owner/notes per entity), persisted in KV. */
   async function fetchCRM() {
     try {
@@ -131,5 +143,5 @@ window.DATA = (function () {
     return Math.max(-100, Math.min(100, s * 20));
   }
 
-  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchSocial, fetchSignals, submitSignal, deleteSignal, fetchCRM, saveCRM, fetchQuote, fetchOwnership, keywordSentiment };
+  return { loadTaxonomy, loadKnowledge, fetchNews, fetchNewsFeed, fetchEntityNews, fetchSocial, fetchSignals, submitSignal, deleteSignal, fetchCRM, saveCRM, aiSummary, fetchQuote, fetchOwnership, keywordSentiment };
 })();

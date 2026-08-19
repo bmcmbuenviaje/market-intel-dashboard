@@ -7,6 +7,10 @@ pages_build_output_dir = "public"
 binding = "KB_STORE"
 id = "54ba027ceecf4c808c43ce678a6bb82f"
 
+# Cloudflare Workers AI (free tier) for real sentiment + weekly AI summaries.
+[ai]
+binding = "AI"
+
 # Static assets live in ./public ; serverless proxy lives in ./functions/api/*
 # Set secrets in the Cloudflare dashboard (Pages > Settings > Environment variables):
 #   FINNHUB_KEY = <your key>

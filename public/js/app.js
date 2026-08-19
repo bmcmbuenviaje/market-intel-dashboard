@@ -509,6 +509,7 @@
       ${e.website ? kv("Website", `<a href="${e.website}" target="_blank" rel="noopener">${e.website}</a>`) : ""}
       ${parent ? kv("Parent", `<a data-nav="${parent.id}">${parent.name}</a>`) : ""}
       ${linksRow(e)}
+      <div class="rel-group"><h4>✨ AI take</h4><div id="aiTake"><span class="muted" style="font-size:12px">—</span></div></div>
       ${crmEditor(e)}
       ${relGroup("Owns / subsidiaries", owns)}
       ${relGroup("Sister brands", siblings)}
@@ -616,7 +617,23 @@
       const all = [...live, ...tagged].filter(n => n.url && !seen.has(n.url) && (seen.add(n.url), true));
       all.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
       render(all);
-    } catch (err) { /* keep the instant tagged list */ }
+      loadAITake(e, all.map(a => a.title).filter(Boolean), token);
+    } catch (err) { loadAITake(e, tagged.map(a => a.title).filter(Boolean), token); }
+  }
+  async function loadAITake(e, titles, token) {
+    const box = document.getElementById("aiTake");
+    if (!box) return;
+    if (!titles || !titles.length) { box.innerHTML = `<span class="muted" style="font-size:12px">No recent news to summarize.</span>`; return; }
+    box.innerHTML = `<span class="muted" style="font-size:12px">generating summary…</span>`;
+    try {
+      const r = await DATA.aiSummary(e.name, titles.slice(0, 12));
+      if (token !== S.entNewsToken) return;
+      if (r.configured === false) { box.innerHTML = `<span class="muted" style="font-size:12px">Add the Workers AI <code>[ai]</code> binding to enable AI summaries.</span>`; return; }
+      const senti = typeof r.sentiment === "number" ? r.sentiment : null;
+      box.innerHTML = r.summary
+        ? `<div style="font-size:13px;line-height:1.5">${esc(r.summary)}</div>${senti != null ? `<div class="muted" style="font-size:11px;margin-top:3px">AI sentiment: <span class="${senti > 5 ? "senti-pos" : senti < -5 ? "senti-neg" : ""}">${senti >= 0 ? "+" : ""}${senti}</span></div>` : ""}`
+        : `<span class="muted" style="font-size:12px">—</span>`;
+    } catch (err) { box.innerHTML = `<span class="muted" style="font-size:12px">AI unavailable.</span>`; }
   }
   /* Per-entity social listening (YouTube + Reddit). */
   async function loadEntitySocial(e) {
