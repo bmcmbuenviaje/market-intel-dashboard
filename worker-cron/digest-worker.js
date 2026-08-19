@@ -1,23 +1,21 @@
-/* Scheduled digest worker (optional, free).
-   Cloudflare Pages can't run cron, so this standalone Worker fires on a schedule
-   and pings your deployed site's /api/digest, which builds the digest and posts it
-   to DIGEST_WEBHOOK (configured on the Pages project).
+/* Scheduled worker (optional, free). Cloudflare Pages can't run cron, so this
+   standalone Worker fires on a schedule and pings your deployed site's endpoints:
+     - /api/digest   (watchlist digest → DIGEST_WEBHOOK)
+     - /api/detect?post=1  (NEW partnership signals → DIGEST_WEBHOOK)
+   Both post to DIGEST_WEBHOOK, configured on the Pages project.
 
    Deploy from this folder:  npx wrangler deploy
-   Config (wrangler.toml): set DIGEST_TARGET (your pages URL) and WATCHLIST_IDS. */
+   Config (wrangler.toml): DIGEST_TARGET (your pages URL) and WATCHLIST_IDS. */
+async function run(env) {
+  const base = (env.DIGEST_TARGET || "").replace(/\/$/, "");
+  if (!base) return "configure DIGEST_TARGET";
+  const jobs = [`${base}/api/detect?post=1`];
+  const ids = (env.WATCHLIST_IDS || "").trim();
+  if (ids) jobs.unshift(`${base}/api/digest?ids=${encodeURIComponent(ids)}`);
+  const results = await Promise.allSettled(jobs.map(u => fetch(u)));
+  return `ran ${jobs.length} job(s): ${results.map(r => r.status).join(", ")}`;
+}
 export default {
-  async scheduled(event, env, ctx) {
-    const ids = (env.WATCHLIST_IDS || "").trim();
-    if (!env.DIGEST_TARGET || !ids) return;
-    const url = `${env.DIGEST_TARGET.replace(/\/$/, "")}/api/digest?ids=${encodeURIComponent(ids)}`;
-    ctx.waitUntil(fetch(url).catch(() => {}));
-  },
-  // Allow manual trigger for testing: GET the worker URL.
-  async fetch(request, env) {
-    const ids = (env.WATCHLIST_IDS || "").trim();
-    if (!env.DIGEST_TARGET || !ids) return new Response("configure DIGEST_TARGET + WATCHLIST_IDS", { status: 400 });
-    const url = `${env.DIGEST_TARGET.replace(/\/$/, "")}/api/digest?ids=${encodeURIComponent(ids)}`;
-    const r = await fetch(url);
-    return new Response(await r.text(), { headers: { "content-type": "application/json" } });
-  }
+  async scheduled(event, env, ctx) { ctx.waitUntil(run(env)); },
+  async fetch(request, env) { return new Response(await run(env), { headers: { "content-type": "text/plain" } }); }
 };

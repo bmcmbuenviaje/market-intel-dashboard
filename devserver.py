@@ -508,6 +508,50 @@ def api_yt_channel(qs):
         return {"configured": True, "error": str(e)}
 
 
+_PARTNER_RX = re.compile(r"\b(partner|partners|partnership|teams up|team up|collaborat|tie-?up|joins forces|join forces|sponsor|signs? deal|inks? deal|deal with|jv|joint venture)\b", re.I)
+_OWNS_RX = re.compile(r"\b(acquire|acquires|acquisition|acquired|buys|bought|to buy|takeover|take over|majority stake|controlling stake|stake in|merger|merges with)\b", re.I)
+
+def api_detect(qs):
+    post = qs.get("post", [""])[0] == "1"
+    try:
+        with open(os.path.join(ROOT, "data", "knowledge-base.json"), encoding="utf-8") as f:
+            kb = json.load(f)
+    except Exception:
+        return {"error": "kb load failed"}
+    arts = api_news({"days": ["10"]}).get("articles", [])
+    name_of = {e["id"]: e["name"] for e in kb["entities"]}
+    idx = [(e["id"], [s.lower() for s in [e["name"]] + e.get("aliases", []) if len(s) > 3]) for e in kb["entities"]]
+    have = set("|".join(sorted([r["source"], r["target"]])) + "|" + r["type"] for r in kb["relationships"])
+    found = []; seen = set()
+    for a in arts:
+        t = ((a.get("title") or "") + " " + (a.get("summary") or "")).lower()
+        typ = "owns" if _OWNS_RX.search(t) else ("partner" if _PARTNER_RX.search(t) else None)
+        if not typ:
+            continue
+        hits = [eid for eid, needles in idx if any(n in t for n in needles)]
+        uniq = list(dict.fromkeys(hits))
+        if len(uniq) < 2:
+            continue
+        s, tg = uniq[0], uniq[1]
+        key = "|".join(sorted([s, tg])) + "|" + typ
+        if key in have or key in seen:
+            continue
+        seen.add(key)
+        found.append({"source": s, "target": tg, "type": typ, "label": (a.get("title") or "")[:100],
+                      "url": a.get("url"), "src": a.get("source", ""), "names": [name_of.get(s, s), name_of.get(tg, tg)]})
+    posted = 0
+    hook = os.environ.get("DIGEST_WEBHOOK")
+    if post and hook and found:
+        text = "New partnership signals:\n" + "\n".join(f"- {f['names'][0]} {f['type']} {f['names'][1]}: {f['label']} {f['url']}" for f in found[:15])
+        try:
+            from urllib.request import Request as _R
+            urlopen(_R(hook, data=json.dumps({"content": text, "text": text}).encode(),
+                      headers={"content-type": "application/json"}), timeout=15, context=SSL_CTX)
+            posted = len(found)
+        except Exception:
+            posted = 0
+    return {"suggestions": found, "fresh": len(found), "posted": posted, "articles": len(arts)}
+
 def _domain(url):
     try:
         from urllib.parse import urlparse as _up
@@ -542,7 +586,8 @@ def _enrich(url):
 
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,
           "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news,
-          "entity-news": api_entity_news, "social": api_social, "yt-channel": api_yt_channel}
+          "entity-news": api_entity_news, "social": api_social, "yt-channel": api_yt_channel,
+          "detect": api_detect}
 
 
 class Handler(SimpleHTTPRequestHandler):

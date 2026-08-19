@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BD Pipeline · Market Intel</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .wrap { max-width: 1500px; margin: 0 auto; padding: 14px; }
+    .head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .head h1 { margin: 0; font-size: 18px; }
+    .head .grow { flex: 1; }
+    .head select, .head input { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 9px; font-size: 13px; }
+    .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 14px; }
+    .col { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; min-height: 60vh; display: flex; flex-direction: column; }
+    .col h3 { margin: 0; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .col .cnt { color: var(--muted); font-weight: 400; }
+    .col-body { padding: 8px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .col.dragover { outline: 2px dashed var(--accent); outline-offset: -4px; }
+    .pcard { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 9px 10px; cursor: grab; }
+    .pcard:active { cursor: grabbing; }
+    .pcard strong { font-size: 13px; }
+    .pcard .meta { color: var(--muted); font-size: 11px; margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .pcard .owner { background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; }
+    .pcard .notes { color: var(--muted); font-size: 11px; margin-top: 4px; line-height: 1.4; }
+    .empty { color: var(--muted); font-size: 12px; padding: 10px; text-align: center; }
+    .col-prospect { border-left-color: var(--muted); } .col-contacted { border-left-color: var(--accent); }
+    .col-pitched { border-left-color: var(--warn); } .col-won { border-left-color: var(--good); } .col-lost { border-left-color: var(--bad); }
+    .hint { color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div id="gate" class="gate">
+    <form id="gateForm" class="gate-card">
+      <h1>📋 BD Pipeline</h1><p>Enter access code.</p>
+      <input id="gatePass" type="password" autocomplete="off" />
+      <button type="submit">Enter</button><small id="gateErr" class="gate-err"></small>
+    </form>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="wrap">
+      <div class="head">
+        <h1>📋 BD Pipeline</h1>
+        <span class="hint">drag cards between columns to update status</span>
+        <span class="grow"></span>
+        <select id="ownerFilter"><option value="">All owners</option></select>
+        <a href="index.html" class="btn ghost">← Dashboard</a>
+      </div>
+      <div id="board" class="board"></div>
+      <p class="empty" id="emptyNote" style="display:none">No accounts in the pipeline yet — open a company on the dashboard and set its <b>BD status</b>.</p>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=1"></script>
+  <script src="js/gate.js?v=1"></script>
+  <script>
+  const COLS = [["prospect","Prospect"],["contacted","Contacted"],["pitched","Pitched"],["won","Won"],["lost","Lost"]];
+  let ENT = {}, CRM = {};
+
+  document.addEventListener("mi:authed", async () => {
+    try {
+      const kb = await (await fetch("/api/kb")).json();
+      (kb.entities || []).forEach(e => ENT[e.id] = e);
+    } catch (e) {}
+    try { CRM = (await (await fetch("/api/crm")).json()).crm || {}; } catch (e) {}
+    const owners = [...new Set(Object.values(CRM).map(c => c.owner).filter(Boolean))].sort();
+    document.getElementById("ownerFilter").innerHTML = `<option value="">All owners</option>` + owners.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join("");
+    document.getElementById("ownerFilter").onchange = render;
+    render();
+  }, { once: true });
+
+  function render() {
+    const ownerF = document.getElementById("ownerFilter").value;
+    const board = document.getElementById("board");
+    const ids = Object.keys(CRM).filter(id => CRM[id].status && ENT[id] && (!ownerF || CRM[id].owner === ownerF));
+    document.getElementById("emptyNote").style.display = ids.length ? "none" : "block";
+    board.innerHTML = COLS.map(([v, label]) => {
+      const cards = ids.filter(id => CRM[id].status === v);
+      return `<div class="col col-${v}" data-status="${v}">
+        <h3>${label} <span class="cnt">${cards.length}</span></h3>
+        <div class="col-body" data-status="${v}">
+          ${cards.map(cardHtml).join("") || `<div class="empty">—</div>`}
+        </div></div>`;
+    }).join("");
+    wireDnD();
+  }
+
+  function cardHtml(id) {
+    const e = ENT[id], c = CRM[id];
+    return `<div class="pcard" draggable="true" data-id="${esc(id)}">
+      <strong>${esc(e.name)}</strong>
+      <div class="meta"><span>${esc(e.category || "")}</span>${c.owner ? `<span class="owner">${esc(c.owner)}</span>` : ""}</div>
+      ${c.notes ? `<div class="notes">${esc(c.notes).slice(0, 120)}</div>` : ""}</div>`;
+  }
+
+  function wireDnD() {
+    document.querySelectorAll(".pcard").forEach(card => {
+      card.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", card.dataset.id); e.dataTransfer.effectAllowed = "move"; });
+    });
+    document.querySelectorAll(".col").forEach(col => {
+      col.addEventListener("dragover", e => { e.preventDefault(); col.classList.add("dragover"); });
+      col.addEventListener("dragleave", () => col.classList.remove("dragover"));
+      col.addEventListener("drop", async e => {
+        e.preventDefault(); col.classList.remove("dragover");
+        const id = e.dataTransfer.getData("text/plain");
+        const status = col.dataset.status;
+        if (!id || !CRM[id] || CRM[id].status === status) return;
+        const prev = CRM[id].status;
+        CRM[id].status = status; render();               // optimistic
+        try {
+          const r = await fetch("/api/crm", { method: "PUT", headers: { "content-type": "application/json" },
+            body: JSON.stringify({ id, status, owner: CRM[id].owner || "", notes: CRM[id].notes || "" }) });
+          if (!r.ok) throw 0;
+        } catch (err) { CRM[id].status = prev; render(); alert("Couldn't save — reverted."); }
+      });
+    });
+  }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+  </script>
+</body>
+</html>
