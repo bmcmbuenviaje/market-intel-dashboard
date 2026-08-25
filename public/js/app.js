@@ -129,6 +129,7 @@
       renderIntel();
     });
     document.addEventListener("mi:selectEntity", (e) => selectEntity(e.detail));
+    document.addEventListener("mi:focusEntity", (e) => focusEntity(e.detail));
   }
 
   function currentView() {

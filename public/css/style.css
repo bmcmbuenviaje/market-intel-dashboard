@@ -104,6 +104,10 @@ a:hover { text-decoration: underline; }
 .bd-panel { grid-area: bd; }
 .feed-panel { grid-area: feed; }
 
+.gutter { position: absolute; z-index: 30; background: transparent; border-radius: 3px; transition: background .12s; }
+.gutter.col { width: 6px; cursor: col-resize; }
+.gutter.row { height: 6px; cursor: row-resize; }
+.gutter:hover, .gutter.active { background: var(--accent); opacity: .6; }
 #map, #graph { flex: 1; min-height: 0; }
 #map { background: #0a1524; }
 #graph { background: radial-gradient(600px 300px at 50% 0%, #14203a, var(--panel)); }
@@ -175,6 +179,9 @@ a:hover { text-decoration: underline; }
 .badge-verified { color: var(--good); }
 .badge-unverified { color: var(--warn); }
 
+.map-legend { background: rgba(18,26,43,.9); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; max-height: 40%; overflow: auto; font-size: 10px; line-height: 1.5; color: var(--text); columns: 2; column-gap: 10px; }
+.map-legend span { display: flex; align-items: center; gap: 5px; break-inside: avoid; }
+.map-legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); color: var(--text); }
 .leaflet-popup-content { font-size: 13px; }
 
