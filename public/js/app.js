@@ -33,7 +33,7 @@
     } catch (e) { status("Failed to load local data: " + e.message, false); return; }
 
     FILTERS.setTaxonomy(S.taxonomy);
-    MAPVIEW.setCategoryColors(S.taxonomy.categories);
+    MAPVIEW.setTaxonomy(S.taxonomy);
     GRAPHVIEW.setColors(S.taxonomy.categories, S.taxonomy.relationshipTypes);
     populateFilterOptions();
     buildSearchIndex();
@@ -130,6 +130,10 @@
     });
     document.addEventListener("mi:selectEntity", (e) => selectEntity(e.detail));
     document.addEventListener("mi:focusEntity", (e) => focusEntity(e.detail));
+    document.addEventListener("mi:filterCountry", (e) => {
+      FILTERS.state.scope = "country"; FILTERS.state.country = e.detail;
+      syncFilterUI(); refresh();
+    });
   }
 
   function currentView() {
@@ -163,7 +167,7 @@
     S.view = view;
     FUSION.tagNewsToEntities(S.news, S.kb.entities);
     S.news.forEach(n => { if (n.manualIds && n.manualIds.length) n.entityIds = [...new Set([...(n.entityIds || []), ...n.manualIds])]; });
-    MAPVIEW.render(view.entities, S.news);
+    MAPVIEW.render(view.entities, S.news, view.relationships);
     MAPVIEW.focus(FILTERS.state.scope === "country" ? FILTERS.state.country : null, S.taxonomy);
     GRAPHVIEW.build(view.entities, view.relationships);
     renderIntel();
@@ -436,7 +440,7 @@
     selectEntity(id);                                   // entity profile (+ recent news + social)
     GRAPHVIEW.build(ego.entities, ego.relationships);   // relationship graph → its network
     setTimeout(() => GRAPHVIEW.highlight(id), 350);
-    MAPVIEW.render(ego.entities, []);                   // map → just its network
+    MAPVIEW.render(ego.entities, S.news, ego.relationships); // map → its network + lines
     if (e.lat != null && e.lng != null) MAPVIEW.centerOn(e.lat, e.lng, 7);
     renderIntelFocused(e);                              // intelligence → focused BD view
     renderFeedFocused(e);                               // live signal feed → its news

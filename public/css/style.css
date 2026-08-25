@@ -189,6 +189,14 @@ a:hover { text-decoration: underline; }
 .map-legend { background: rgba(18,26,43,.9); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; max-height: 40%; overflow: auto; font-size: 10px; line-height: 1.5; color: var(--text); columns: 2; column-gap: 10px; }
 .map-legend span { display: flex; align-items: center; gap: 5px; break-inside: avoid; }
 .map-legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.mk-pulse { position: absolute; inset: -5px; border-radius: 50%; border: 2px solid; opacity: .7; animation: mkpulse 1.7s ease-out infinite; }
+@keyframes mkpulse { 0% { transform: scale(.55); opacity: .7; } 100% { transform: scale(1.7); opacity: 0; } }
+.country-pin { font-size: 10px; color: #cdd8ea; background: rgba(15,22,38,.7); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; white-space: nowrap; cursor: pointer; }
+.country-pin:hover { color: var(--accent); border-color: var(--accent); }
+.choke { font-size: 15px; filter: drop-shadow(0 0 3px #000); cursor: pointer; }
+.wx { font-size: 16px; filter: drop-shadow(0 0 3px #000); }
+.leaflet-control-layers { background: var(--panel) !important; color: var(--text); border: 1px solid var(--border) !important; }
+.leaflet-control-layers-list { font-size: 12px; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); color: var(--text); }
 .leaflet-popup-content { font-size: 13px; }
 
