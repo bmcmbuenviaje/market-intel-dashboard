@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10.3.1/dist/gridstack.min.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -64,53 +65,62 @@
     <div class="ticker" id="commodityStrip"></div>
     <datalist id="allEntities"></datalist>
 
-    <main class="grid">
-      <section class="panel map-panel">
-        <div class="panel-head">🗺️ Signal Map <span class="hint">news &amp; entities by location</span></div>
-        <div id="map"></div>
-      </section>
+    <main class="grid-stack" id="dash">
+      <div class="grid-stack-item" gs-id="map" gs-x="0" gs-y="0" gs-w="5" gs-h="6"><div class="grid-stack-item-content">
+        <section class="panel map-panel">
+          <div class="panel-head">🗺️ Signal Map <span class="hint">drag header to move · edges to resize</span></div>
+          <div id="map"></div>
+        </section>
+      </div></div>
 
-      <section class="panel graph-panel">
-        <div class="panel-head">
-          🕸️ Relationship Graph
-          <span class="hint">solid=owns · dashed=partner · dotted=competes/regulates</span>
-          <span class="graph-actions"><button id="btnFit" class="mini">Fit</button></span>
-        </div>
-        <div id="graph"></div>
-      </section>
+      <div class="grid-stack-item" gs-id="graph" gs-x="5" gs-y="0" gs-w="4" gs-h="6"><div class="grid-stack-item-content">
+        <section class="panel graph-panel">
+          <div class="panel-head">🕸️ Relationship Graph
+            <span class="hint">solid=owns · dashed=partner · dotted=competes</span>
+            <span class="graph-actions"><button id="btnFit" class="mini">Fit</button></span>
+          </div>
+          <div id="graph"></div>
+        </section>
+      </div></div>
 
-      <aside class="panel side-panel" id="sidePanel">
-        <div class="panel-head">📇 Entity Profile</div>
-        <div id="entityProfile" class="entity-profile">
-          <p class="muted">Click a node in the graph or a marker on the map.</p>
-        </div>
-      </aside>
+      <div class="grid-stack-item" gs-id="side" gs-x="9" gs-y="0" gs-w="3" gs-h="12"><div class="grid-stack-item-content">
+        <aside class="panel side-panel" id="sidePanel">
+          <div class="panel-head">📇 Entity Profile</div>
+          <div id="entityProfile" class="entity-profile">
+            <p class="muted">Click a node in the graph or a marker on the map.</p>
+          </div>
+        </aside>
+      </div></div>
 
-      <section class="panel bd-panel">
-        <div class="panel-head">🎯 Intelligence
-          <span class="seg" id="bdTabs">
-            <button class="seg-btn active" data-tab="hotlist">🔥 Hot</button>
-            <button class="seg-btn" data-tab="targets">Targets</button>
-            <button class="seg-btn" data-tab="whitespace">Whitespace</button>
-            <button class="seg-btn" data-tab="watchlist">Watchlist</button>
-          </span>
-        </div>
-        <div id="bdList" class="bd-list"></div>
-      </section>
+      <div class="grid-stack-item" gs-id="bd" gs-x="0" gs-y="6" gs-w="5" gs-h="6"><div class="grid-stack-item-content">
+        <section class="panel bd-panel">
+          <div class="panel-head">🎯 Intelligence
+            <span class="seg" id="bdTabs">
+              <button class="seg-btn active" data-tab="hotlist">🔥 Hot</button>
+              <button class="seg-btn" data-tab="targets">Targets</button>
+              <button class="seg-btn" data-tab="whitespace">Whitespace</button>
+              <button class="seg-btn" data-tab="watchlist">Watchlist</button>
+            </span>
+          </div>
+          <div id="bdList" class="bd-list"></div>
+        </section>
+      </div></div>
 
-      <section class="panel feed-panel">
-        <div class="panel-head">📰 Live Signal Feed
-          <span class="graph-actions"><button id="btnAddInsight" class="mini">＋ Add link</button></span>
-        </div>
-        <div id="addInsight" class="add-insight hidden">
-          <input id="aiUrl" type="text" placeholder="Paste a news article / social post URL…" />
-          <input id="aiEntity" type="text" list="allEntities" placeholder="Connect to (optional)" />
-          <select id="aiCat"><option value="">auto category</option></select>
-          <button id="aiSubmit" class="btn">Connect</button>
-          <div id="aiMsg" class="ai-msg"></div>
-        </div>
-        <div id="feed" class="feed"></div>
-      </section>
+      <div class="grid-stack-item" gs-id="feed" gs-x="5" gs-y="6" gs-w="4" gs-h="6"><div class="grid-stack-item-content">
+        <section class="panel feed-panel">
+          <div class="panel-head">📰 Live Signal Feed
+            <span class="graph-actions"><button id="btnAddInsight" class="mini">＋ Add link</button></span>
+          </div>
+          <div id="addInsight" class="add-insight hidden">
+            <input id="aiUrl" type="text" placeholder="Paste a news article / social post URL…" />
+            <input id="aiEntity" type="text" list="allEntities" placeholder="Connect to (optional)" />
+            <select id="aiCat"><option value="">auto category</option></select>
+            <button id="aiSubmit" class="btn">Connect</button>
+            <div id="aiMsg" class="ai-msg"></div>
+          </div>
+          <div id="feed" class="feed"></div>
+        </section>
+      </div></div>
     </main>
   </div>
 
@@ -118,15 +128,16 @@
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gridstack@10.3.1/dist/gridstack-all.js"></script>
 
-  <script src="js/config.js?v=14"></script>
-  <script src="js/gate.js?v=14"></script>
-  <script src="js/data-fetcher.js?v=14"></script>
-  <script src="js/filters.js?v=14"></script>
-  <script src="js/map.js?v=14"></script>
-  <script src="js/graph.js?v=14"></script>
-  <script src="js/fusion.js?v=14"></script>
-  <script src="js/app.js?v=14"></script>
-  <script src="js/layout.js?v=14"></script>
+  <script src="js/config.js?v=15"></script>
+  <script src="js/gate.js?v=15"></script>
+  <script src="js/data-fetcher.js?v=15"></script>
+  <script src="js/filters.js?v=15"></script>
+  <script src="js/map.js?v=15"></script>
+  <script src="js/graph.js?v=15"></script>
+  <script src="js/fusion.js?v=15"></script>
+  <script src="js/app.js?v=15"></script>
+  <script src="js/layout.js?v=15"></script>
 </body>
 </html>
