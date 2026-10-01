@@ -6,12 +6,14 @@ window.MAPVIEW = (function () {
   let map, entityLayer, newsLayer, connLayer, chokeLayer, wxLayer, countryLayer, heatLayer;
   let catColor = {}, relStyle = {}, taxo = null, disabled = false;
 
-  /* Open-source / free basemaps only (no API key, no paid tiles). CARTO + OSM
-     both render OpenStreetMap data. Picked via Admin → Homescreen. */
+  /* Keyless, free basemaps only — no API key, no sign-up, no watermark.
+     (CARTO's free tiles now stamp "API key required", so they're not used.)
+     Esri = ArcGIS Online free basemaps; OSM/OpenTopoMap = community tiles.
+     Picked via Admin → Homescreen. */
   const TILES = {
-    dark:    { url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", opts: { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 } },
-    light:   { url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", opts: { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 } },
-    voyager: { url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", opts: { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 } },
+    dark:    { url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", opts: { attribution: "Tiles &copy; Esri", maxZoom: 16 } },
+    light:   { url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", opts: { attribution: "Tiles &copy; Esri", maxZoom: 16 } },
+    voyager: { url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", opts: { attribution: "&copy; OpenStreetMap, SRTM &copy; OpenTopoMap", subdomains: "abc", maxZoom: 17 } },
     osm:     { url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", opts: { attribution: "&copy; OpenStreetMap contributors", subdomains: "abc", maxZoom: 19 } }
   };
 
