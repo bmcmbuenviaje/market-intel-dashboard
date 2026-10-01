@@ -166,5 +166,29 @@ window.FUSION = (function () {
     return out.sort((a, b) => b.score - a.score).slice(0, 15);
   }
 
-  return { tagNewsToEntities, perEntitySignals, rank, whitespace, hotlist };
+  /* Share of Voice (Meltwater-style): of all tracked signal volume across a set of
+     brands/companies, what % does each own — plus its net sentiment. Feed it the
+     whole in-view set for a category benchmark, or one brand + its competitors for
+     a head-to-head "market share of attention". */
+  function shareOfVoice(entities, news, opts) {
+    opts = opts || {};
+    const limit = opts.limit || 10;
+    const sig = perEntitySignals(entities, news, []);
+    let total = 0;
+    let rows = entities.map(e => {
+      if (e.type === "regulator") return null;
+      const arts = sig[e.id].articles;
+      const m = arts.length;
+      total += m;
+      const senti = m ? Math.round(arts.reduce((a, n) => a + (typeof n.sentiment === "number" ? n.sentiment : 0), 0) / m) : 0;
+      const pos = arts.filter(n => (n.sentiment || 0) > 5).length;
+      const neg = arts.filter(n => (n.sentiment || 0) < -5).length;
+      return { id: e.id, name: e.name, category: e.category, country: e.country, mentions: m, senti, pos, neg };
+    }).filter(r => r && r.mentions > 0);
+    rows.forEach(r => { r.share = total ? Math.round(r.mentions / total * 1000) / 10 : 0; });
+    rows.sort((a, b) => b.mentions - a.mentions || b.senti - a.senti);
+    return { total, rows: rows.slice(0, limit), tracked: entities.filter(e => e.type !== "regulator").length };
+  }
+
+  return { tagNewsToEntities, perEntitySignals, rank, whitespace, hotlist, shareOfVoice };
 })();

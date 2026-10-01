@@ -141,6 +141,21 @@ a:hover { text-decoration: underline; }
 .chip.crm-won { border-color: var(--good); color: var(--good); background: rgba(34,197,94,.12); }
 .chip.crm-lost { border-color: var(--bad); color: var(--bad); }
 
+/* ---- Share of Voice ---- */
+.sov-panel { grid-area: sov; }
+.sov-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 8px; gap: 8px; }
+.sov-chartwrap { position: relative; height: 150px; flex: 0 0 auto; }
+.sov-list { overflow: auto; min-height: 0; }
+.sov-head { font-size: 11px; color: var(--muted); margin: 0 2px 6px; }
+.sov-row { display: flex; align-items: center; gap: 7px; padding: 4px 2px; cursor: pointer; border-radius: 6px; }
+.sov-row:hover { background: var(--panel-2); }
+.sov-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+.sov-name { flex: 0 0 29%; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sov-bar { flex: 1; height: 7px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+.sov-bar i { display: block; height: 100%; border-radius: 999px; }
+.sov-pct { flex: 0 0 auto; font-size: 11px; color: var(--muted); min-width: 34px; text-align: right; }
+.sov-senti { flex: 0 0 auto; font-size: 11px; min-width: 26px; text-align: right; }
+
 /* ---- BD list + tabs ---- */
 .seg { margin-left: auto; display: inline-flex; gap: 2px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 2px; }
 .seg-btn { background: transparent; border: 0; color: var(--muted); font-size: 11px; padding: 3px 9px; border-radius: 6px; cursor: pointer; }
@@ -209,7 +224,7 @@ a:hover { text-decoration: underline; }
     grid-template-areas: "map map" "graph graph" "side bd" "feed feed";
   }
   #map, #graph { height: 340px; min-height: 340px; }
-  .side-panel, .bd-panel, .feed-panel { min-height: 260px; }
+  .side-panel, .bd-panel, .feed-panel, .sov-panel { min-height: 260px; }
 }
 @media (max-width: 720px) {
   .grid { grid-template-columns: 1fr; grid-template-areas: "map" "graph" "side" "bd" "feed"; }

@@ -8,6 +8,7 @@ window.GRAPHVIEW = (function () {
   }
 
   function init() {
+    if (!document.getElementById("graph")) return;
     cy = cytoscape({
       container: document.getElementById("graph"),
       wheelSensitivity: 0.2,
@@ -42,6 +43,7 @@ window.GRAPHVIEW = (function () {
   }
 
   function build(entities, relationships) {
+    if (!cy) return;
     const ids = new Set(entities.map(e => e.id));
     const els = [];
     entities.forEach(e => {
@@ -84,6 +86,7 @@ window.GRAPHVIEW = (function () {
   }
 
   function highlight(id) {
+    if (!cy) return;
     cy.$(":selected").unselect();
     const n = cy.getElementById(id);
     if (n) { n.select(); cy.animate({ center: { eles: n }, zoom: 1.4 }, { duration: 300 }); }

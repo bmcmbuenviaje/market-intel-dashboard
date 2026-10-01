@@ -4,7 +4,16 @@
    pins that filter the whole dashboard, and a layer toggle. */
 window.MAPVIEW = (function () {
   let map, entityLayer, newsLayer, connLayer, chokeLayer, wxLayer, countryLayer, heatLayer;
-  let catColor = {}, relStyle = {}, taxo = null;
+  let catColor = {}, relStyle = {}, taxo = null, disabled = false;
+
+  /* Open-source / free basemaps only (no API key, no paid tiles). CARTO + OSM
+     both render OpenStreetMap data. Picked via Admin → Homescreen. */
+  const TILES = {
+    dark:    { url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", opts: { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 } },
+    light:   { url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", opts: { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 } },
+    voyager: { url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", opts: { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 } },
+    osm:     { url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", opts: { attribution: "&copy; OpenStreetMap contributors", subdomains: "abc", maxZoom: 19 } }
+  };
 
   const CHOKEPOINTS = [
     { n: "Port of Manila", lat: 14.60, lng: 120.96 }, { n: "Batangas Port", lat: 13.75, lng: 121.05 },
@@ -22,9 +31,11 @@ window.MAPVIEW = (function () {
     80: "🌦️ Showers", 81: "🌦️ Showers", 82: "⛈️ Heavy showers", 95: "⛈️ Thunderstorm", 96: "⛈️ Thunderstorm", 99: "⛈️ Thunderstorm" };
 
   function init() {
+    if (!document.getElementById("map")) { disabled = true; return; }
     map = L.map("map", { zoomControl: true, worldCopyJump: true }).setView([12.88, 121.77], 5);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 }).addTo(map);
+    const pick = (window.APP_SETTINGS && window.APP_SETTINGS.mapTiles) || "dark";
+    const t = TILES[pick] || TILES.dark;
+    L.tileLayer(t.url, t.opts).addTo(map);
     entityLayer = (L.markerClusterGroup
       ? L.markerClusterGroup({ maxClusterRadius: 45, spiderfyOnMaxZoom: true, chunkedLoading: true, showCoverageOnHover: false })
       : L.layerGroup()).addTo(map);
@@ -37,6 +48,7 @@ window.MAPVIEW = (function () {
   }
 
   function setTaxonomy(t) {
+    if (disabled || !map) { taxo = t; return; }
     taxo = t;
     (t.categories || []).forEach(c => { catColor[c.id] = c.color; });
     (t.relationshipTypes || []).forEach(r => { relStyle[r.id] = r; });
@@ -71,6 +83,7 @@ window.MAPVIEW = (function () {
   }
 
   function render(entities, news, relationships) {
+    if (disabled || !map) return;
     entityLayer.clearLayers(); newsLayer.clearLayers(); connLayer.clearLayers();
     const byId = {}; entities.forEach(e => { byId[e.id] = e; });
 
@@ -149,7 +162,7 @@ window.MAPVIEW = (function () {
     }
   }
 
-  function focus(country) { if (!country) { map.setView([15, 40], 2); return; } const c = (taxo.countries || []).find(x => x.code === country); if (c) map.setView([c.lat, c.lng], 6); }
+  function focus(country) { if (disabled || !map) return; if (!country) { map.setView([15, 40], 2); return; } const c = (taxo.countries || []).find(x => x.code === country); if (c) map.setView([c.lat, c.lng], 6); }
   function centerOn(lat, lng, zoom) { if (map && lat != null && lng != null) map.setView([lat, lng], zoom || 7); }
 
   return { init, setTaxonomy, setCategoryColors, render, focus, centerOn, invalidate: () => map && map.invalidateSize() };

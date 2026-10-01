@@ -26,3 +26,31 @@ window.getSources = function () {
     return Object.assign({}, window.CONFIG.DEFAULT_SOURCES, s || {});
   } catch (e) { return window.CONFIG.DEFAULT_SOURCES; }
 };
+
+/* ---- Homescreen settings (which modules show + which map tiles) ----
+   Loaded once from /api/settings (KV in prod, app-settings.json in dev). Both
+   app.js and layout.js await the same cached promise so widget pruning and the
+   GridStack init stay in sync. Falls back to "everything on" if the API is down. */
+window.APP_SETTINGS = null;
+window.DEFAULT_SETTINGS = {
+  modules: { map: true, graph: true, side: true, bd: true, feed: true, sov: true },
+  mapTiles: "dark"
+};
+window.loadAppSettings = function () {
+  if (window.__settingsPromise) return window.__settingsPromise;
+  window.__settingsPromise = fetch(window.CONFIG.API_BASE + "/settings")
+    .then(r => (r.ok ? r.json() : {}))
+    .catch(() => ({}))
+    .then(s => {
+      const def = window.DEFAULT_SETTINGS;
+      const merged = { modules: Object.assign({}, def.modules, (s && s.modules) || {}),
+        mapTiles: (s && s.mapTiles) || def.mapTiles };
+      window.APP_SETTINGS = merged;
+      return merged;
+    });
+  return window.__settingsPromise;
+};
+window.moduleOn = function (id) {
+  const m = window.APP_SETTINGS && window.APP_SETTINGS.modules;
+  return !m || m[id] !== false;
+};

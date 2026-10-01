@@ -92,7 +92,7 @@
         </aside>
       </div></div>
 
-      <div class="grid-stack-item" gs-id="bd" gs-x="0" gs-y="6" gs-w="5" gs-h="6"><div class="grid-stack-item-content">
+      <div class="grid-stack-item" gs-id="bd" gs-x="0" gs-y="6" gs-w="3" gs-h="6"><div class="grid-stack-item-content">
         <section class="panel bd-panel">
           <div class="panel-head">🎯 Intelligence
             <span class="seg" id="bdTabs">
@@ -106,7 +106,19 @@
         </section>
       </div></div>
 
-      <div class="grid-stack-item" gs-id="feed" gs-x="5" gs-y="6" gs-w="4" gs-h="6"><div class="grid-stack-item-content">
+      <div class="grid-stack-item" gs-id="sov" gs-x="3" gs-y="6" gs-w="3" gs-h="6"><div class="grid-stack-item-content">
+        <section class="panel sov-panel">
+          <div class="panel-head">📊 Share of Voice
+            <span class="hint">mention share across tracked brands</span>
+          </div>
+          <div class="sov-body">
+            <div class="sov-chartwrap"><canvas id="sovChart"></canvas></div>
+            <div id="sovList" class="sov-list"></div>
+          </div>
+        </section>
+      </div></div>
+
+      <div class="grid-stack-item" gs-id="feed" gs-x="6" gs-y="6" gs-w="3" gs-h="6"><div class="grid-stack-item-content">
         <section class="panel feed-panel">
           <div class="panel-head">📰 Live Signal Feed
             <span class="graph-actions"><button id="btnAddInsight" class="mini">＋ Add link</button></span>
@@ -131,14 +143,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gridstack@10.3.1/dist/gridstack-all.js"></script>
 
-  <script src="js/config.js?v=16"></script>
-  <script src="js/gate.js?v=16"></script>
-  <script src="js/data-fetcher.js?v=16"></script>
-  <script src="js/filters.js?v=16"></script>
-  <script src="js/map.js?v=16"></script>
-  <script src="js/graph.js?v=16"></script>
-  <script src="js/fusion.js?v=16"></script>
-  <script src="js/app.js?v=16"></script>
-  <script src="js/layout.js?v=16"></script>
+  <script src="js/config.js?v=17"></script>
+  <script src="js/gate.js?v=17"></script>
+  <script src="js/data-fetcher.js?v=17"></script>
+  <script src="js/filters.js?v=17"></script>
+  <script src="js/map.js?v=17"></script>
+  <script src="js/graph.js?v=17"></script>
+  <script src="js/fusion.js?v=17"></script>
+  <script src="js/app.js?v=17"></script>
+  <script src="js/layout.js?v=17"></script>
 </body>
 </html>

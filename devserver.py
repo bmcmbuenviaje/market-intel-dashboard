@@ -584,6 +584,17 @@ def _enrich(url):
         return {}
 
 
+_MODULE_IDS = ["map", "graph", "side", "bd", "feed", "sov"]
+_TILE_IDS = ["dark", "light", "voyager", "osm"]
+
+def _settings_merge(inp):
+    inp = inp if isinstance(inp, dict) else {}
+    mods_in = inp.get("modules") if isinstance(inp.get("modules"), dict) else {}
+    modules = {m: (False if mods_in.get(m) is False else True) for m in _MODULE_IDS}
+    tiles = inp.get("mapTiles") if inp.get("mapTiles") in _TILE_IDS else "dark"
+    return {"modules": modules, "mapTiles": tiles}
+
+
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,
           "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news,
           "entity-news": api_entity_news, "social": api_social, "yt-channel": api_yt_channel,
@@ -615,6 +626,8 @@ class Handler(SimpleHTTPRequestHandler):
                 except Exception:
                     crm = {}
                 return self._json({"crm": crm})
+            if name == "settings":
+                return self._json(_settings_merge(self._read_settings()))
             fn = ROUTES.get(name)
             if not fn:
                 return self._json({"error": "unknown endpoint"}, 404)
@@ -628,7 +641,31 @@ class Handler(SimpleHTTPRequestHandler):
             return self._save_kb()
         if parsed.path == "/api/crm":
             return self._save_crm()
+        if parsed.path == "/api/settings":
+            return self._save_settings()
         return self._json({"error": "not found"}, 404)
+
+    # ---- app settings (homescreen modules + map tiles) ----
+    def _read_settings(self):
+        try:
+            with open(os.path.join(ROOT, "data", "app-settings.json"), encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+
+    def _save_settings(self):
+        want = os.environ.get("ADMIN_TOKEN")
+        if want and self.headers.get("X-Admin-Token", "") != want:
+            return self._json({"error": "unauthorized"}, 401)
+        try:
+            n = int(self.headers.get("Content-Length", "0"))
+            body = json.loads(self.rfile.read(n) or b"{}")
+        except Exception as e:
+            return self._json({"error": f"invalid JSON: {e}"}, 400)
+        clean = _settings_merge(body)
+        with open(os.path.join(ROOT, "data", "app-settings.json"), "w", encoding="utf-8") as f:
+            json.dump(clean, f, ensure_ascii=False, indent=2)
+        return self._json({"ok": True, "settings": clean})
 
     def _save_crm(self):
         import datetime

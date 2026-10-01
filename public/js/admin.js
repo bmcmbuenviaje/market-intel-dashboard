@@ -1,8 +1,13 @@
 /* Full CRUD admin backed by /api/kb (Cloudflare KV, or the local file in dev). */
 document.addEventListener("mi:authed", init, { once: true });
 
-const S = { kb: null, taxonomy: null, dirty: false, source: "?", editingE: null, editingR: null };
+const S = { kb: null, taxonomy: null, dirty: false, source: "?", editingE: null, editingR: null, settings: null };
 const $ = (id) => document.getElementById(id);
+
+const MODULES = [
+  ["map", "🗺️ Signal Map"], ["graph", "🕸️ Relationship Graph"], ["side", "📇 Entity Profile"],
+  ["bd", "🎯 Intelligence (Hot List / Targets / Whitespace)"], ["sov", "📊 Share of Voice"], ["feed", "📰 Live Signal Feed"]
+];
 
 const SOURCES = [
   { id: "gdelt", label: "GDELT live news", test: "/api/gdelt?query=partnership&days=7" },
@@ -38,6 +43,11 @@ async function init() {
   }
   S.kb.entities = S.kb.entities || [];
   S.kb.relationships = S.kb.relationships || [];
+  try {
+    const raw = await (await fetch("/api/settings")).json();
+    const def = window.DEFAULT_SETTINGS;
+    S.settings = { modules: Object.assign({}, def.modules, raw.modules || {}), mapTiles: raw.mapTiles || def.mapTiles };
+  } catch (e) { S.settings = JSON.parse(JSON.stringify(window.DEFAULT_SETTINGS)); }
   $("adminToken").value = sessionStorage.getItem("mi_admin_token") || "";
   populateSelectors();
   wire();
@@ -73,6 +83,7 @@ function wire() {
     document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === t));
     document.querySelectorAll(".section").forEach(s => s.classList.toggle("active", s.id === "sec-" + t.dataset.sec));
     if (t.dataset.sec === "settings") renderSettings();
+    if (t.dataset.sec === "home") renderHome();
   });
   $("eSearch").oninput = renderEntities;
   $("eCatFilter").onchange = renderEntities;
@@ -318,6 +329,34 @@ async function save() {
     }
   } catch (e) { alert("Save error: " + e.message); $("btnSave").textContent = "💾 Save to server"; }
   finally { $("btnSave").disabled = false; setTimeout(() => { $("btnSave").textContent = "💾 Save to server"; }, 4000); }
+}
+
+/* ---------- homescreen (module visibility + map tiles) ---------- */
+function renderHome() {
+  const mods = S.settings.modules || (S.settings.modules = {});
+  const host = $("homeModules"); host.innerHTML = "";
+  MODULES.forEach(([id, label]) => {
+    const on = mods[id] !== false;
+    const row = document.createElement("div"); row.className = "row"; row.innerHTML = `<span>${label}</span>`;
+    const t = document.createElement("div"); t.className = "toggle" + (on ? " on" : ""); t.innerHTML = "<span></span>";
+    t.onclick = () => { mods[id] = t.classList.toggle("on"); };
+    row.appendChild(t); host.appendChild(row);
+  });
+  $("homeTiles").value = S.settings.mapTiles || "dark";
+  $("homeTiles").onchange = () => { S.settings.mapTiles = $("homeTiles").value; };
+  $("homeSave").onclick = saveHome;
+}
+async function saveHome() {
+  const token = $("adminToken").value.trim(); sessionStorage.setItem("mi_admin_token", token);
+  const msg = $("homeMsg"); msg.textContent = "saving…";
+  if (!MODULES.some(([id]) => S.settings.modules[id] !== false)) { msg.innerHTML = `<span style="color:var(--bad)">keep at least one module on</span>`; return; }
+  try {
+    const res = await fetch("/api/settings", { method: "PUT",
+      headers: { "content-type": "application/json", "X-Admin-Token": token }, body: JSON.stringify(S.settings) });
+    const j = await res.json();
+    if (res.ok && j.ok) { S.settings = j.settings; msg.innerHTML = `<span style="color:var(--good)">✓ saved — reload the dashboard to apply</span>`; }
+    else { msg.innerHTML = `<span style="color:var(--bad)">${esc(j.error || res.status)}${res.status === 501 ? " — bind KB_STORE" : res.status === 403 ? " — set ADMIN_TOKEN" : res.status === 401 ? " — token mismatch" : ""}</span>`; }
+  } catch (e) { msg.innerHTML = `<span style="color:var(--bad)">${esc(e.message)}</span>`; }
 }
 
 /* ---------- settings ---------- */

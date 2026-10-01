@@ -1,0 +1,11 @@
+{
+  "modules": {
+    "map": true,
+    "graph": true,
+    "side": true,
+    "bd": true,
+    "feed": true,
+    "sov": true
+  },
+  "mapTiles": "dark"
+}

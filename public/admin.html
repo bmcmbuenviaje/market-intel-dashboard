@@ -77,6 +77,7 @@
         <button class="tab active" data-sec="entities">Companies &amp; Brands</button>
         <button class="tab" data-sec="connections">Connections</button>
         <button class="tab" data-sec="suggest">🔗 Suggestions</button>
+        <button class="tab" data-sec="home">🖥️ Homescreen</button>
         <button class="tab" data-sec="io">Import / Export</button>
         <button class="tab" data-sec="settings">Settings &amp; APIs</button>
       </div>
@@ -125,6 +126,26 @@
           <span class="count" id="suggCount"></span>
         </div>
         <div id="suggRows"></div>
+      </section>
+
+      <!-- HOMESCREEN -->
+      <section class="section" id="sec-home">
+        <div class="note">Turn dashboard modules on/off and choose the map basemap. Changes save to the server (needs the admin token above) and apply to everyone on the next page load. All basemaps are free / open-source (OpenStreetMap-based) — no API key.</div>
+        <h3 style="font-size:15px">Modules shown on the homescreen</h3>
+        <div id="homeModules"></div>
+        <h3 style="font-size:15px;margin-top:18px">Signal map basemap</h3>
+        <div class="row"><span>Tile style <span class="count">open-source / free</span></span>
+          <select id="homeTiles" style="min-width:220px">
+            <option value="dark">CARTO Dark (OpenStreetMap)</option>
+            <option value="light">CARTO Light (OpenStreetMap)</option>
+            <option value="voyager">CARTO Voyager (OpenStreetMap)</option>
+            <option value="osm">OpenStreetMap Standard</option>
+          </select>
+        </div>
+        <div class="toolbar" style="margin-top:14px">
+          <button class="btn" id="homeSave">💾 Save homescreen</button>
+          <span class="count" id="homeMsg"></span>
+        </div>
       </section>
 
       <!-- IMPORT / EXPORT -->
@@ -215,8 +236,8 @@
 
   <datalist id="entIds"></datalist>
 
-  <script src="js/config.js?v=3"></script>
-  <script src="js/gate.js?v=3"></script>
-  <script src="js/admin.js?v=3"></script>
+  <script src="js/config.js?v=4"></script>
+  <script src="js/gate.js?v=4"></script>
+  <script src="js/admin.js?v=4"></script>
 </body>
 </html>

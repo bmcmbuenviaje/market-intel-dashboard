@@ -1,10 +1,11 @@
 /* Orchestrator: loads data, wires filters, renders map/graph/BD/feed. */
 (function () {
   const S = {
-    taxonomy: null, kb: null, news: [], sparkChart: null, reqToken: 0,
+    taxonomy: null, kb: null, news: [], sparkChart: null, sovChart: null, reqToken: 0,
     tab: "hotlist", view: null, entNewsToken: 0, socialToken: 0,
     focus: null, nameIndex: {}, submitted: [], crm: {}
   };
+  const hasMod = (id) => window.moduleOn(id);
   const CRM_STATUS = [["", "—"], ["prospect", "Prospect"], ["contacted", "Contacted"], ["pitched", "Pitched"], ["won", "Won"], ["lost", "Lost"]];
   const crmLabel = (v) => (CRM_STATUS.find(s => s[0] === v) || ["", ""])[1];
 
@@ -25,8 +26,18 @@
 
   document.addEventListener("mi:authed", boot, { once: true });
 
+  /* Remove the DOM for any module turned off in Admin → Homescreen, before
+     GridStack or Leaflet/Cytoscape bind to it. */
+  function pruneModules() {
+    ["map", "graph", "side", "bd", "feed", "sov"].forEach(id => {
+      if (!hasMod(id)) { const el = document.querySelector('.grid-stack-item[gs-id="' + id + '"]'); if (el) el.remove(); }
+    });
+  }
+
   async function boot() {
-    MAPVIEW.init(); GRAPHVIEW.init();
+    await window.loadAppSettings();   // which modules to show + which map tiles
+    pruneModules();
+    MAPVIEW.init(); GRAPHVIEW.init(); // both self-skip if their panel was removed
     try {
       S.taxonomy = await DATA.loadTaxonomy();
       S.kb = await DATA.loadKnowledge();
@@ -172,6 +183,7 @@
     GRAPHVIEW.build(view.entities, view.relationships);
     renderIntel();
     renderFeed(S.news);
+    renderSOV(view.entities);
   }
 
   async function refresh() {
@@ -260,7 +272,7 @@
 
   function renderIntel() {
     const el = $("bdList");
-    if (!S.view) return;
+    if (!el || !S.view) return;
     if (S.tab === "hotlist") {
       const list = FUSION.hotlist(S.kb.entities, S.news, S.kb.relationships, FILTERS,
         { watch: getWatch(), today: new Date().toISOString().slice(0, 10) });
@@ -325,9 +337,58 @@
     }
   }
 
+  /* ---------- Share of Voice (Meltwater-style mention-share benchmark) ---------- */
+  function colorOf(cat) { return (S.taxonomy.categories.find(c => c.id === cat) || {}).color || "#38bdf8"; }
+  function renderSOV(entities, opts) {
+    if (!hasMod("sov")) return;
+    const wrap = $("sovList"), cv = document.getElementById("sovChart");
+    if (!wrap || !cv) return;
+    opts = opts || {};
+    const sov = FUSION.shareOfVoice(entities, S.news, { limit: 8 });
+    const head = opts.vs ? `vs. ${esc(opts.vs)}'s set` : "tracked brands";
+    if (!sov.rows.length) {
+      if (S.sovChart) { S.sovChart.destroy(); S.sovChart = null; }
+      wrap.innerHTML = `<p class="muted" style="padding:8px;font-size:12px">No mention volume yet across ${sov.tracked} ${head} — live news may still be loading, or widen the scope / category.</p>`;
+      return;
+    }
+    const labels = sov.rows.map(r => r.name);
+    const data = sov.rows.map(r => r.mentions);
+    const colors = sov.rows.map(r => colorOf(r.category));
+    if (S.sovChart) S.sovChart.destroy();
+    S.sovChart = new Chart(cv, {
+      type: "doughnut",
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: "rgba(10,16,28,.6)", borderWidth: 1 }] },
+      options: { cutout: "56%", responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ` ${c.label}: ${sov.rows[c.dataIndex].share}% (${c.parsed} signal${c.parsed === 1 ? "" : "s"})` } } } }
+    });
+    wrap.innerHTML = `<div class="sov-head">${sov.total} signals · ${head}</div>` + sov.rows.map(r => {
+      const sc = r.senti > 5 ? "senti-pos" : r.senti < -5 ? "senti-neg" : "senti-neu";
+      return `<div class="sov-row" data-id="${r.id}" title="${r.pos} positive · ${r.neg} negative signal(s)">
+        <span class="sov-dot" style="background:${colorOf(r.category)}"></span>
+        <span class="sov-name">${esc(r.name)}</span>
+        <span class="sov-bar"><i style="width:${Math.max(4, r.share)}%;background:${colorOf(r.category)}"></i></span>
+        <span class="sov-pct">${r.share}%</span>
+        <span class="sov-senti ${sc}">${r.senti >= 0 ? "+" : ""}${r.senti}</span></div>`;
+    }).join("");
+    wrap.querySelectorAll(".sov-row").forEach(row => row.onclick = () => focusEntity(row.dataset.id));
+  }
+  function renderSOVFocused(e) {
+    const ids = new Set([e.id]);
+    S.kb.relationships.forEach(r => {
+      if (r.type !== "competitor") return;
+      if (r.source === e.id) ids.add(r.target);
+      if (r.target === e.id) ids.add(r.source);
+    });
+    let set = S.kb.entities.filter(x => ids.has(x.id));
+    if (set.length < 2) set = S.kb.entities.filter(x => x.category === e.category && FILTERS.entityVisible(x));
+    renderSOV(set, { vs: e.name });
+  }
+
   /* ---------- Feed ---------- */
   function renderFeed(news) {
     const el = $("feed");
+    if (!el) return;
     const items = [...news].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 80);
     if (!items.length) { el.innerHTML = `<p class="muted" style="padding:8px">No signals yet — fetching live news…</p>`; return; }
     el.innerHTML = items.map(n => {
@@ -444,10 +505,12 @@
     if (e.lat != null && e.lng != null) MAPVIEW.centerOn(e.lat, e.lng, 7);
     renderIntelFocused(e);                              // intelligence → focused BD view
     renderFeedFocused(e);                               // live signal feed → its news
+    renderSOVFocused(e);                                // share of voice vs. its competitive set
   }
   function clearFocus() { S.focus = null; $("fSearch").value = ""; $("statusBar").textContent = ""; refresh(); }
 
   function renderIntelFocused(e) {
+    if (!$("bdList")) return;
     const rels = S.kb.relationships;
     const partners = rels.filter(r => r.type === "partner" && (r.source === e.id || r.target === e.id));
     const comps = rels.filter(r => r.type === "competitor" && (r.source === e.id || r.target === e.id)).map(r => r.source === e.id ? r.target : r.source);
@@ -486,6 +549,7 @@
     const e = S.kb.entities.find(x => x.id === id);
     if (!e) return;
     GRAPHVIEW.highlight(id);
+    if (!document.getElementById("entityProfile")) return; // Entity Profile panel turned off
 
     const rels = S.kb.relationships;
     const parent = e.parent && S.kb.entities.find(x => x.id === e.parent);
