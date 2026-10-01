@@ -552,6 +552,55 @@ def api_detect(qs):
             posted = 0
     return {"suggestions": found, "fresh": len(found), "posted": posted, "articles": len(arts)}
 
+def api_movers(qs):
+    post = qs.get("post", [""])[0] == "1"
+    try:
+        with open(os.path.join(ROOT, "data", "knowledge-base.json"), encoding="utf-8") as f:
+            kb = json.load(f)
+    except Exception:
+        return {"movers": [], "error": "kb load failed"}
+    arts = api_news({"days": ["14"]}).get("articles", [])
+    now = time.time()
+    idx = [(e["id"], e["name"], [s.lower() for s in [e["name"]] + e.get("aliases", []) if len(s) > 3]) for e in kb["entities"]]
+    tally = {}
+    for a in arts:
+        t = ((a.get("title") or "") + " " + (a.get("summary") or "")).lower()
+        ts = _parse_dt(a.get("date"))
+        age = (now - ts) if ts else None
+        sv = _senti(t)
+        for eid, name, needles in idx:
+            if not any(n in t for n in needles):
+                continue
+            o = tally.setdefault(eid, {"id": eid, "name": name, "recent": 0, "prior": 0, "sR": 0, "cR": 0, "sP": 0, "cP": 0})
+            if age is not None and age <= 3 * 86400:
+                o["recent"] += 1; o["sR"] += sv; o["cR"] += 1
+            else:
+                o["prior"] += 1; o["sP"] += sv; o["cP"] += 1
+    out = []
+    for o in tally.values():
+        expected = o["prior"] / 11 * 3
+        if o["recent"] >= 3 and o["recent"] >= expected * 1.5:
+            s_now = round(o["sR"] / o["cR"]) if o["cR"] else 0
+            s_prev = round(o["sP"] / o["cP"]) if o["cP"] else 0
+            out.append({"id": o["id"], "name": o["name"], "recent": o["recent"],
+                        "expected": round(expected * 10) / 10, "swing": s_now - s_prev, "score": o["recent"] - expected})
+    out.sort(key=lambda x: x["score"], reverse=True)
+    posted = False
+    hook = os.environ.get("DIGEST_WEBHOOK")
+    if post and hook and out:
+        text = "Market movers (last 3 days):\n" + "\n".join(
+            f"- {m['name']}: {m['recent']} signal(s) vs ~{m['expected']} baseline" + (f", sentiment {'+' if m['swing'] >= 0 else ''}{m['swing']}" if m['swing'] else "")
+            for m in out[:10])
+        try:
+            from urllib.request import Request as _R
+            urlopen(_R(hook, data=json.dumps({"content": text, "text": text}).encode(),
+                      headers={"content-type": "application/json"}), timeout=15, context=SSL_CTX)
+            posted = True
+        except Exception:
+            posted = False
+    return {"movers": out, "posted": posted, "articles": len(arts)}
+
+
 def _domain(url):
     try:
         from urllib.parse import urlparse as _up
@@ -584,7 +633,7 @@ def _enrich(url):
         return {}
 
 
-_MODULE_IDS = ["map", "graph", "side", "bd", "feed", "sov"]
+_MODULE_IDS = ["map", "graph", "side", "bd", "feed", "sov", "pulse"]
 _TILE_IDS = ["dark", "light", "voyager", "osm"]
 
 def _settings_merge(inp):
@@ -598,7 +647,7 @@ def _settings_merge(inp):
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,
           "finnhub": api_finnhub, "digest": api_digest, "me": api_me, "news": api_news,
           "entity-news": api_entity_news, "social": api_social, "yt-channel": api_yt_channel,
-          "detect": api_detect}
+          "detect": api_detect, "movers": api_movers}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -707,6 +756,25 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception:
                 pass
             return self._json({"configured": False})
+        if path == "/api/movers":
+            try:
+                n = int(self.headers.get("Content-Length", "0"))
+                body = json.loads(self.rfile.read(n) or b"{}")
+            except Exception as e:
+                return self._json({"error": f"invalid JSON: {e}"}, 400)
+            text = str(body.get("text") or "")[:3500]
+            if not text:
+                return self._json({"error": "no text"}, 400)
+            hook = os.environ.get("DIGEST_WEBHOOK")
+            if not hook:
+                return self._json({"posted": False, "error": "DIGEST_WEBHOOK not set on the server"})
+            try:
+                from urllib.request import Request as _R
+                urlopen(_R(hook, data=json.dumps({"content": text, "text": text}).encode(),
+                          headers={"content-type": "application/json"}), timeout=15, context=SSL_CTX)
+                return self._json({"posted": True})
+            except Exception as e:
+                return self._json({"posted": False, "error": str(e)})
         return self._json({"error": "not found"}, 404)
 
     def do_DELETE(self):

@@ -1,8 +1,8 @@
 /* Orchestrator: loads data, wires filters, renders map/graph/BD/feed. */
 (function () {
   const S = {
-    taxonomy: null, kb: null, news: [], sparkChart: null, sovChart: null, reqToken: 0,
-    tab: "hotlist", view: null, entNewsToken: 0, socialToken: 0,
+    taxonomy: null, kb: null, news: [], sparkChart: null, sovChart: null, pulseChart: null, reqToken: 0,
+    tab: "hotlist", pulseTab: "spikes", view: null, entNewsToken: 0, socialToken: 0,
     focus: null, nameIndex: {}, submitted: [], crm: {}
   };
   const hasMod = (id) => window.moduleOn(id);
@@ -29,7 +29,7 @@
   /* Remove the DOM for any module turned off in Admin → Homescreen, before
      GridStack or Leaflet/Cytoscape bind to it. */
   function pruneModules() {
-    ["map", "graph", "side", "bd", "feed", "sov"].forEach(id => {
+    ["map", "graph", "side", "bd", "feed", "sov", "pulse"].forEach(id => {
       if (!hasMod(id)) { const el = document.querySelector('.grid-stack-item[gs-id="' + id + '"]'); if (el) el.remove(); }
     });
   }
@@ -139,6 +139,12 @@
       $("bdTabs").querySelectorAll(".seg-btn").forEach(x => x.classList.toggle("active", x === b));
       renderIntel();
     });
+    const pt = $("pulseTabs");
+    if (pt) pt.querySelectorAll(".seg-btn").forEach(b => b.onclick = () => {
+      S.pulseTab = b.dataset.ptab;
+      pt.querySelectorAll(".seg-btn").forEach(x => x.classList.toggle("active", x === b));
+      renderPulse();
+    });
     document.addEventListener("mi:selectEntity", (e) => selectEntity(e.detail));
     document.addEventListener("mi:focusEntity", (e) => focusEntity(e.detail));
     document.addEventListener("mi:filterCountry", (e) => {
@@ -184,6 +190,7 @@
     renderIntel();
     renderFeed(S.news);
     renderSOV(view.entities);
+    renderPulse();
   }
 
   async function refresh() {
@@ -384,6 +391,125 @@
     if (set.length < 2) set = S.kb.entities.filter(x => x.category === e.category && FILTERS.entityVisible(x));
     renderSOV(set, { vs: e.name });
   }
+
+  /* ---------- Market Pulse (spikes / SOV-over-time / sources / campaigns) ---------- */
+  function renderPulse() {
+    if (!hasMod("pulse")) return;
+    const body = $("pulseBody"); if (!body) return;
+    if (S.pulseChart) { try { S.pulseChart.destroy(); } catch (e) {} S.pulseChart = null; }
+    const days = FILTERS.state.windowDays || 30;
+    if (S.pulseTab === "sov") return renderPulseSOVTrend(body, days);
+    if (S.pulseTab === "sources") return renderPulseSources(body);
+    if (S.pulseTab === "campaigns") return renderPulseCampaigns(body, days);
+    return renderPulseSpikes(body, days);
+  }
+  function pulseEntities() { return (S.view && S.view.entities) || (S.kb && S.kb.entities) || []; }
+
+  function renderPulseSpikes(body, days) {
+    const list = ANALYTICS.spikes(pulseEntities(), S.news, { days, recent: 2, limit: 14 });
+    const bar = `<div class="pulse-bar"><button class="btn" id="btnMovers">📤 Push movers to webhook</button>
+      <span class="muted" id="moversMsg" style="font-size:12px"></span></div>`;
+    if (!list.length) {
+      body.innerHTML = bar + `<p class="muted" style="padding:10px;font-size:13px">No spikes right now — volume &amp; sentiment are steady vs. each brand's own baseline. Live news may still be loading, or widen the window.</p>`;
+      wireMovers([]); return;
+    }
+    body.innerHTML = bar + `<div class="pulse-cards">` + list.map(m => {
+      const tb = m.type === "volume" ? `<span class="chip" style="border-color:#f97316;color:#f97316">⚡ volume spike</span>`
+        : `<span class="chip" style="border-color:var(--accent);color:var(--accent)">sentiment swing</span>`;
+      return `<div class="pulse-card" data-id="${m.id}">
+        <div class="top"><span><strong>${esc(m.name)}</strong> <span class="muted">· ${esc(catLabel(m.category))}</span></span> ${tb}</div>
+        <div class="why">${m.why.map(esc).join(" · ")}</div></div>`;
+    }).join("") + `</div>`;
+    body.querySelectorAll(".pulse-card").forEach(c => c.onclick = () => focusEntity(c.dataset.id));
+    wireMovers(list);
+  }
+  function wireMovers(list) {
+    const b = $("btnMovers"); if (!b) return;
+    b.onclick = async () => {
+      const msg = $("moversMsg");
+      if (!list.length) { msg.textContent = "no movers to push"; return; }
+      const text = "📈 Market movers:\n" + list.slice(0, 12).map(m => `• ${m.name}: ${m.why.join("; ")}`).join("\n");
+      msg.textContent = "posting…"; b.disabled = true;
+      try {
+        const r = await fetch(window.CONFIG.API_BASE + "/movers", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+        const j = await r.json();
+        msg.innerHTML = j.posted ? `<span class="senti-pos">✓ posted to webhook</span>`
+          : `<span class="senti-neg">${esc(j.error || "not posted — set DIGEST_WEBHOOK")}</span>`;
+      } catch (e) { msg.innerHTML = `<span class="senti-neg">${esc(e.message)}</span>`; }
+      finally { b.disabled = false; }
+    };
+  }
+
+  function renderPulseSOVTrend(body, days) {
+    const { labels, series } = ANALYTICS.sovOverTime(pulseEntities(), S.news, { days, topN: 5 });
+    if (!series.length) { body.innerHTML = `<p class="muted" style="padding:10px;font-size:13px">Not enough dated signals yet to chart share of voice over time — widen the window or wait for live news.</p>`; return; }
+    body.innerHTML = `<div class="pulse-chartwrap"><canvas id="pulseChart"></canvas></div>
+      <div class="pulse-legend">${series.map(x => `<span><i style="background:${colorOf(x.e.category)}"></i>${esc(x.e.name)}</span>`).join("")}</div>`;
+    const ds = series.map(x => ({ label: x.e.name, data: x.s.vol, borderColor: colorOf(x.e.category),
+      backgroundColor: colorOf(x.e.category) + "55", fill: true, tension: .3, pointRadius: 0, borderWidth: 1.5 }));
+    S.pulseChart = new Chart(document.getElementById("pulseChart"), {
+      type: "line",
+      data: { labels: labels.map(l => l.slice(5)), datasets: ds },
+      options: { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+        plugins: { legend: { display: false } },
+        scales: { x: { stacked: true, grid: { display: false }, ticks: { color: "#8598b6", font: { size: 9 }, maxTicksLimit: 12 } },
+          y: { stacked: true, beginAtZero: true, grid: { color: "rgba(255,255,255,.06)" }, ticks: { color: "#8598b6", font: { size: 9 }, precision: 0 } } } }
+    });
+  }
+
+  function renderPulseSources(body) {
+    const id = S.focus || null;
+    const list = ANALYTICS.topSources(S.news, { entityId: id, limit: 16 });
+    const scope = id ? `for ${esc(nameOf(id))}` : "across all tracked brands";
+    if (!list.length) { body.innerHTML = `<p class="muted" style="padding:10px;font-size:13px">No sourced signals yet ${scope}.</p>`; return; }
+    const max = list[0].count || 1;
+    body.innerHTML = `<div class="pulse-sub">Top outlets, channels &amp; handles ${scope}</div><div class="src-list">` + list.map(s => {
+      const sc = s.senti > 5 ? "senti-pos" : s.senti < -5 ? "senti-neg" : "senti-neu";
+      return `<div class="src-row"><span class="src-name">${esc(s.source)}</span>
+        <span class="src-bar"><i style="width:${Math.round(s.count / max * 100)}%"></i></span>
+        <span class="src-count">${s.count}</span><span class="src-senti ${sc}">${s.senti >= 0 ? "+" : ""}${s.senti}</span></div>`;
+    }).join("") + `</div>`;
+  }
+
+  function renderPulseCampaigns(body, days) {
+    body.innerHTML = `<div class="camp-add">
+        <input id="campInput" type="text" placeholder="Track a keyword, product or #hashtag…" />
+        <button class="btn" id="campAdd">＋ Track</button></div>
+      <div id="campList" class="camp-list"></div>`;
+    $("campAdd").onclick = addCampaign;
+    $("campInput").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addCampaign(); } });
+    renderCampaignList(days);
+  }
+  function renderCampaignList(days) {
+    const wrap = $("campList"); if (!wrap) return;
+    const kws = getCampaigns();
+    if (!kws.length) { wrap.innerHTML = `<p class="muted" style="padding:8px;font-size:13px">Pin a campaign term and the tool tracks its mention volume + sentiment across the live feed. Try a brand, product launch, or hashtag.</p>`; return; }
+    wrap.innerHTML = kws.map(kw => {
+      const c = ANALYTICS.campaign(S.news, kw, days);
+      const sc = c.senti > 5 ? "senti-pos" : c.senti < -5 ? "senti-neg" : "senti-neu";
+      const max = Math.max.apply(null, c.vol.concat(1));
+      const spark = c.vol.map(v => `<i style="height:${Math.max(3, Math.round(v / max * 100))}%" title="${v}"></i>`).join("");
+      return `<div class="camp-card">
+        <div class="camp-top"><strong>${esc(kw)}</strong>
+          <span class="camp-stats"><span class="chip">${c.count} mention${c.count === 1 ? "" : "s"}</span>
+          <span class="chip ${sc}">sent ${c.senti >= 0 ? "+" : ""}${c.senti}</span>
+          <button class="feed-del" data-rmkw="${esc(kw)}" title="Stop tracking">✕</button></span></div>
+        <div class="camp-spark">${spark}</div>
+        ${c.items.length ? `<a href="${esc(c.items[0].url)}" target="_blank" rel="noopener" class="camp-latest">latest: ${esc(c.items[0].title)}</a>` : `<span class="muted" style="font-size:11px">no mentions in window yet</span>`}
+      </div>`;
+    }).join("");
+    wrap.querySelectorAll("[data-rmkw]").forEach(b => b.onclick = () => { removeCampaign(b.dataset.rmkw); renderCampaignList(days); });
+  }
+  function getCampaigns() { try { return JSON.parse(localStorage.getItem("mi_campaigns")) || []; } catch (e) { return []; } }
+  function setCampaigns(a) { try { localStorage.setItem("mi_campaigns", JSON.stringify(a)); } catch (e) {} }
+  function addCampaign() {
+    const v = ($("campInput").value || "").trim(); if (!v) return;
+    const a = getCampaigns();
+    if (!a.map(x => x.toLowerCase()).includes(v.toLowerCase())) a.unshift(v);
+    setCampaigns(a.slice(0, 12)); $("campInput").value = "";
+    renderCampaignList(FILTERS.state.windowDays || 30);
+  }
+  function removeCampaign(kw) { setCampaigns(getCampaigns().filter(x => x !== kw)); }
 
   /* ---------- Feed ---------- */
   function renderFeed(news) {

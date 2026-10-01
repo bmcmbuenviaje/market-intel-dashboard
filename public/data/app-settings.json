@@ -5,7 +5,8 @@
     "side": true,
     "bd": true,
     "feed": true,
-    "sov": true
+    "sov": true,
+    "pulse": true
   },
   "mapTiles": "dark"
 }

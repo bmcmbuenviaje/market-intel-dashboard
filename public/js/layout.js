@@ -47,7 +47,7 @@
   function save() { try { localStorage.setItem("mi_grid", JSON.stringify(grid.save(false))); } catch (e) {} }
   function resetLayout() {
     localStorage.removeItem("mi_grid");
-    const def = { map: [0, 0, 5, 6], graph: [5, 0, 4, 6], side: [9, 0, 3, 12], bd: [0, 6, 3, 6], sov: [3, 6, 3, 6], feed: [6, 6, 3, 6] };
+    const def = { map: [0, 0, 5, 6], graph: [5, 0, 4, 6], side: [9, 0, 3, 12], bd: [0, 6, 3, 6], sov: [3, 6, 3, 6], feed: [6, 6, 3, 6], pulse: [0, 12, 12, 6] };
     grid.batchUpdate();
     grid.engine.nodes.forEach(n => { const d = def[n.el.getAttribute("gs-id")]; if (d) grid.update(n.el, { x: d[0], y: d[1], w: d[2], h: d[3] }); });
     grid.commit(); reflow(); save();

@@ -8,10 +8,10 @@
    Auth: PUT requires header  X-Admin-Token == env.ADMIN_TOKEN  (fail-closed if unset). */
 const KEY = "app-settings";
 const DEFAULTS = {
-  modules: { map: true, graph: true, side: true, bd: true, feed: true, sov: true },
+  modules: { map: true, graph: true, side: true, bd: true, feed: true, sov: true, pulse: true },
   mapTiles: "dark"
 };
-const MODULE_IDS = ["map", "graph", "side", "bd", "feed", "sov"];
+const MODULE_IDS = ["map", "graph", "side", "bd", "feed", "sov", "pulse"];
 const TILE_IDS = ["dark", "light", "voyager", "osm"];
 
 export async function onRequest(context) {

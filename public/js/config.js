@@ -33,7 +33,7 @@ window.getSources = function () {
    GridStack init stay in sync. Falls back to "everything on" if the API is down. */
 window.APP_SETTINGS = null;
 window.DEFAULT_SETTINGS = {
-  modules: { map: true, graph: true, side: true, bd: true, feed: true, sov: true },
+  modules: { map: true, graph: true, side: true, bd: true, feed: true, sov: true, pulse: true },
   mapTiles: "dark"
 };
 window.loadAppSettings = function () {

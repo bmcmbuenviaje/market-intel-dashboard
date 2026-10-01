@@ -6,7 +6,8 @@ const $ = (id) => document.getElementById(id);
 
 const MODULES = [
   ["map", "🗺️ Signal Map"], ["graph", "🕸️ Relationship Graph"], ["side", "📇 Entity Profile"],
-  ["bd", "🎯 Intelligence (Hot List / Targets / Whitespace)"], ["sov", "📊 Share of Voice"], ["feed", "📰 Live Signal Feed"]
+  ["bd", "🎯 Intelligence (Hot List / Targets / Whitespace)"], ["sov", "📊 Share of Voice"], ["feed", "📰 Live Signal Feed"],
+  ["pulse", "📈 Market Pulse (spikes / SOV trend / sources / campaigns)"]
 ];
 
 const SOURCES = [
