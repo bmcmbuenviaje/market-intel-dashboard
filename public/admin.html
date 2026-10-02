@@ -142,6 +142,14 @@
             <option value="voyager">Terrain (OpenTopoMap) — no key</option>
           </select>
         </div>
+        <h3 style="font-size:15px;margin-top:18px">Market Pulse — spike sensitivity</h3>
+        <div class="row"><span>How easily a brand is flagged as "spiking" <span class="count">volume &amp; sentiment jumps in Market Pulse + the movers digest</span></span>
+          <select id="homeSens" style="min-width:220px">
+            <option value="low">Low — only big, obvious spikes</option>
+            <option value="medium">Medium — balanced (default)</option>
+            <option value="high">High — catch small moves early (noisier)</option>
+          </select>
+        </div>
         <div class="toolbar" style="margin-top:14px">
           <button class="btn" id="homeSave">💾 Save homescreen</button>
           <span class="count" id="homeMsg"></span>
@@ -236,8 +244,8 @@
 
   <datalist id="entIds"></datalist>
 
-  <script src="js/config.js?v=4"></script>
-  <script src="js/gate.js?v=4"></script>
-  <script src="js/admin.js?v=4"></script>
+  <script src="js/config.js?v=5"></script>
+  <script src="js/gate.js?v=5"></script>
+  <script src="js/admin.js?v=5"></script>
 </body>
 </html>

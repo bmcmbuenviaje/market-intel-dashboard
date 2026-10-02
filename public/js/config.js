@@ -34,7 +34,8 @@ window.getSources = function () {
 window.APP_SETTINGS = null;
 window.DEFAULT_SETTINGS = {
   modules: { map: true, graph: true, side: true, bd: true, feed: true, sov: true, pulse: true },
-  mapTiles: "dark"
+  mapTiles: "dark",
+  spikeSensitivity: "medium"
 };
 window.loadAppSettings = function () {
   if (window.__settingsPromise) return window.__settingsPromise;
@@ -44,7 +45,8 @@ window.loadAppSettings = function () {
     .then(s => {
       const def = window.DEFAULT_SETTINGS;
       const merged = { modules: Object.assign({}, def.modules, (s && s.modules) || {}),
-        mapTiles: (s && s.mapTiles) || def.mapTiles };
+        mapTiles: (s && s.mapTiles) || def.mapTiles,
+        spikeSensitivity: (s && s.spikeSensitivity) || def.spikeSensitivity };
       window.APP_SETTINGS = merged;
       return merged;
     });

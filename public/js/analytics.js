@@ -27,9 +27,21 @@ window.ANALYTICS = (function () {
   /* Spike / swing detector: compares each brand's last `recent` days against its
      own baseline over the rest of the window. Flags volume spikes and sentiment
      swings — "what moved, and is it good or bad". */
+  /* Sensitivity presets: how easily a brand is flagged as spiking.
+     mult = recent must exceed baseline × this; min = floor on recent count;
+     swing = sentiment points needed to flag a swing. */
+  const SENS = {
+    low:    { mult: 2.2, min: 3, swing: 30 },
+    medium: { mult: 1.5, min: 2, swing: 20 },
+    high:   { mult: 1.2, min: 2, swing: 12 }
+  };
+  function sensParams(s) { return SENS[s] || SENS.medium; }
+
   function spikes(entities, news, opts) {
     opts = opts || {};
     const days = opts.days || 30, recentN = opts.recent || 2, now = Date.now();
+    const p = opts.mult ? opts : sensParams(opts.sensitivity);
+    const mult = p.mult || 1.5, min = p.min || 2, swingTh = p.swing || 20;
     const out = [];
     entities.forEach(e => {
       if (e.type === "regulator") return;
@@ -44,11 +56,11 @@ window.ANALYTICS = (function () {
       const sPrev = prior.length ? Math.round(prior.reduce((a, n) => a + (n.sentiment || 0), 0) / prior.length) : 0;
       const swing = sNow - sPrev;
       let type = null, score = 0; const why = [];
-      if (rc >= 2 && rc >= expected * 1.5 + 1) {
+      if (rc >= min && rc >= expected * mult + 1) {
         type = "volume"; score = rc - expected;
         why.push(`${rc} signal${rc > 1 ? "s" : ""} in ${recentN}d vs ~${expected.toFixed(1)} expected`);
       }
-      if (prior.length >= 2 && recent.length >= 2 && Math.abs(swing) >= 20) {
+      if (prior.length >= 2 && recent.length >= 2 && Math.abs(swing) >= swingTh) {
         if (!type) { type = "sentiment"; score = Math.abs(swing); }
         why.push(`sentiment ${swing >= 0 ? "▲" : "▼"} ${swing >= 0 ? "+" : ""}${swing} (now ${sNow >= 0 ? "+" : ""}${sNow} vs ${sPrev >= 0 ? "+" : ""}${sPrev})`);
       }
@@ -101,5 +113,5 @@ window.ANALYTICS = (function () {
     return { labels, vol, count: items.length, senti: cnt ? Math.round(sen / cnt) : 0, items: items.slice(0, 20) };
   }
 
-  return { dayList, entitySeries, spikes, sovOverTime, topSources, campaign };
+  return { dayList, entitySeries, spikes, sovOverTime, topSources, campaign, sensParams };
 })();

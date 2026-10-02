@@ -9,10 +9,12 @@
 const KEY = "app-settings";
 const DEFAULTS = {
   modules: { map: true, graph: true, side: true, bd: true, feed: true, sov: true, pulse: true },
-  mapTiles: "dark"
+  mapTiles: "dark",
+  spikeSensitivity: "medium"
 };
 const MODULE_IDS = ["map", "graph", "side", "bd", "feed", "sov", "pulse"];
 const TILE_IDS = ["dark", "light", "voyager", "osm"];
+const SENS_IDS = ["low", "medium", "high"];
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -54,7 +56,8 @@ function merge(input) {
     modules[id] = v === false ? false : true;
   });
   const mapTiles = TILE_IDS.includes(input.mapTiles) ? input.mapTiles : DEFAULTS.mapTiles;
-  return { modules, mapTiles };
+  const spikeSensitivity = SENS_IDS.includes(input.spikeSensitivity) ? input.spikeSensitivity : DEFAULTS.spikeSensitivity;
+  return { modules, mapTiles, spikeSensitivity };
 }
 
 function json(payload, status = 200, extra = {}) {

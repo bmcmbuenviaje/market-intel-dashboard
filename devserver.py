@@ -559,6 +559,13 @@ def api_movers(qs):
             kb = json.load(f)
     except Exception:
         return {"movers": [], "error": "kb load failed"}
+    try:
+        with open(os.path.join(ROOT, "data", "app-settings.json"), encoding="utf-8") as f:
+            sens = json.load(f).get("spikeSensitivity", "medium")
+    except Exception:
+        sens = "medium"
+    pm = {"low": (2.2, 3), "medium": (1.5, 2), "high": (1.2, 2)}.get(sens, (1.5, 2))
+    mult, minc = pm
     arts = api_news({"days": ["14"]}).get("articles", [])
     now = time.time()
     idx = [(e["id"], e["name"], [s.lower() for s in [e["name"]] + e.get("aliases", []) if len(s) > 3]) for e in kb["entities"]]
@@ -579,7 +586,7 @@ def api_movers(qs):
     out = []
     for o in tally.values():
         expected = o["prior"] / 11 * 3
-        if o["recent"] >= 3 and o["recent"] >= expected * 1.5:
+        if o["recent"] >= minc and o["recent"] >= expected * mult:
             s_now = round(o["sR"] / o["cR"]) if o["cR"] else 0
             s_prev = round(o["sP"] / o["cP"]) if o["cP"] else 0
             out.append({"id": o["id"], "name": o["name"], "recent": o["recent"],
@@ -636,12 +643,15 @@ def _enrich(url):
 _MODULE_IDS = ["map", "graph", "side", "bd", "feed", "sov", "pulse"]
 _TILE_IDS = ["dark", "light", "voyager", "osm"]
 
+_SENS_IDS = ["low", "medium", "high"]
+
 def _settings_merge(inp):
     inp = inp if isinstance(inp, dict) else {}
     mods_in = inp.get("modules") if isinstance(inp.get("modules"), dict) else {}
     modules = {m: (False if mods_in.get(m) is False else True) for m in _MODULE_IDS}
     tiles = inp.get("mapTiles") if inp.get("mapTiles") in _TILE_IDS else "dark"
-    return {"modules": modules, "mapTiles": tiles}
+    sens = inp.get("spikeSensitivity") if inp.get("spikeSensitivity") in _SENS_IDS else "medium"
+    return {"modules": modules, "mapTiles": tiles, "spikeSensitivity": sens}
 
 
 ROUTES = {"gdelt": api_gdelt, "yahoo": api_yahoo, "wikidata": api_wikidata,

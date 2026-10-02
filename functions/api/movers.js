@@ -23,9 +23,11 @@ export async function onRequest(context) {
   if (request.method === "GET") {
     const post = new URL(request.url).searchParams.get("post") === "1";
     const kb = await loadKB(request, env);
+    const settings = await loadSettings(request, env);
+    const p = SENS[settings.spikeSensitivity] || SENS.medium;
     let arts = [];
     try { arts = (await (await fetch(new URL("/api/news?days=14", request.url))).json()).articles || []; } catch (e) {}
-    const movers = computeMovers(kb, arts);
+    const movers = computeMovers(kb, arts, p);
     let posted = false;
     if (post && env.DIGEST_WEBHOOK && movers.length) {
       const text = "📈 Market movers (last 3 days):\n" + movers.slice(0, 10).map(m =>
@@ -47,11 +49,19 @@ async function loadKB(request, env) {
   catch (e) { return { entities: [], relationships: [] }; }
 }
 
+const SENS = { low: { mult: 2.2, min: 3 }, medium: { mult: 1.5, min: 2 }, high: { mult: 1.2, min: 2 } };
+async function loadSettings(request, env) {
+  if (env.KB_STORE) { const v = await env.KB_STORE.get("app-settings"); if (v) { try { return JSON.parse(v); } catch (e) {} } }
+  try { return await (await fetch(new URL("/data/app-settings.json", request.url))).json(); }
+  catch (e) { return {}; }
+}
+
 const POS = ["surge", "record", "growth", "win", "launch", "partner", "expand", "best", "strong", "boost", "success", "profit"];
 const NEG = ["loss", "cut", "decline", "ban", "fine", "probe", "lawsuit", "fraud", "weak", "drop", "scam", "fail", "boycott"];
 function senti(t) { t = (t || "").toLowerCase(); let s = 0; POS.forEach(w => { if (t.includes(w)) s++; }); NEG.forEach(w => { if (t.includes(w)) s--; }); return Math.max(-100, Math.min(100, s * 15)); }
 
-function computeMovers(kb, arts) {
+function computeMovers(kb, arts, p) {
+  p = p || SENS.medium;
   const now = Date.now(), DAY = 864e5;
   const idx = (kb.entities || []).map(e => ({ id: e.id, name: e.name,
     needles: [e.name].concat(e.aliases || []).map(s => (s || "").toLowerCase()).filter(s => s.length > 3) }));
@@ -71,7 +81,7 @@ function computeMovers(kb, arts) {
   Object.keys(tally).forEach(id => {
     const o = tally[id];
     const expected = o.prior / 11 * 3; // baseline window ≈ days 4–14
-    if (o.recent >= 3 && o.recent >= expected * 1.5) {
+    if (o.recent >= p.min && o.recent >= expected * p.mult) {
       const sNow = o.cRecent ? Math.round(o.sRecent / o.cRecent) : 0;
       const sPrev = o.cPrior ? Math.round(o.sPrior / o.cPrior) : 0;
       out.push({ id, name: o.name, recent: o.recent, expected: Math.round(expected * 10) / 10, swing: sNow - sPrev, score: o.recent - expected });

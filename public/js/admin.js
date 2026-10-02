@@ -345,6 +345,8 @@ function renderHome() {
   });
   $("homeTiles").value = S.settings.mapTiles || "dark";
   $("homeTiles").onchange = () => { S.settings.mapTiles = $("homeTiles").value; };
+  $("homeSens").value = S.settings.spikeSensitivity || "medium";
+  $("homeSens").onchange = () => { S.settings.spikeSensitivity = $("homeSens").value; };
   $("homeSave").onclick = saveHome;
 }
 async function saveHome() {

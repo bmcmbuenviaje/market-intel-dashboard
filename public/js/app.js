@@ -3,7 +3,7 @@
   const S = {
     taxonomy: null, kb: null, news: [], sparkChart: null, sovChart: null, pulseChart: null, reqToken: 0,
     tab: "hotlist", pulseTab: "spikes", view: null, entNewsToken: 0, socialToken: 0,
-    focus: null, nameIndex: {}, submitted: [], crm: {}
+    focus: null, search: null, nameIndex: {}, submitted: [], crm: {}
   };
   const hasMod = (id) => window.moduleOn(id);
   const CRM_STATUS = [["", "—"], ["prospect", "Prospect"], ["contacted", "Contacted"], ["pitched", "Pitched"], ["won", "Won"], ["lost", "Lost"]];
@@ -194,7 +194,7 @@
   }
 
   async function refresh() {
-    S.focus = null; // any full refresh (filter change / refresh button) exits focus mode
+    S.focus = null; S.search = null; // any full refresh (filter change / refresh) exits focus/search mode
     const sources = window.getSources();
     const view = currentView();
     const token = ++S.reqToken; // guards against stale async renders after a filter change
@@ -406,7 +406,8 @@
   function pulseEntities() { return (S.view && S.view.entities) || (S.kb && S.kb.entities) || []; }
 
   function renderPulseSpikes(body, days) {
-    const list = ANALYTICS.spikes(pulseEntities(), S.news, { days, recent: 2, limit: 14 });
+    const sens = (window.APP_SETTINGS && window.APP_SETTINGS.spikeSensitivity) || "medium";
+    const list = ANALYTICS.spikes(pulseEntities(), S.news, { days, recent: 2, limit: 14, sensitivity: sens });
     const bar = `<div class="pulse-bar"><button class="btn" id="btnMovers">📤 Push movers to webhook</button>
       <span class="muted" id="moversMsg" style="font-size:12px"></span></div>`;
     if (!list.length) {
@@ -597,15 +598,52 @@
   }
   function doSearch(q) {
     q = (q || "").trim(); if (!q) return;
-    let id = S.nameIndex[q.toLowerCase()];
-    if (!id) {
-      const lq = q.toLowerCase();
-      const hit = S.kb.entities.find(e => e.name.toLowerCase().includes(lq) || (e.aliases || []).some(a => a.toLowerCase().includes(lq)));
-      id = hit && hit.id;
-    }
-    if (id) focusEntity(id);
-    else status(`No match for "${q}" — try another name.`, false);
+    // An exact name/alias hit jumps straight to that entity's focus view…
+    const id = S.nameIndex[q.toLowerCase()];
+    if (id) { focusEntity(id); return; }
+    // …anything else is a topic/keyword search that filters the whole dashboard.
+    searchTopic(q);
   }
+
+  /* Keyword/topic search: reshapes every panel to show only what matches the query
+     — matching companies/brands + any signal mentioning the term. Click a result
+     to drill into its full focus view; "show full view" clears it. */
+  function searchTopic(q) {
+    const lq = q.toLowerCase();
+    S.focus = null; S.search = q;
+    ++S.reqToken; // supersede any in-flight refresh
+    const view = currentView();
+    const matchEnt = (e) => (e.name + " " + (e.aliases || []).join(" ") + " " + catLabel(e.category) + " " + (e.country || "") + " " + (e.description || "")).toLowerCase().includes(lq);
+    let ents = view.entities.filter(matchEnt), widened = false;
+    if (!ents.length) { ents = S.kb.entities.filter(matchEnt); widened = ents.length > 0; } // widen past the active filter if nothing in view
+    const entIds = new Set(ents.map(e => e.id));
+    const news = S.news.filter(n => {
+      const t = ((n.title || "") + " " + (n.summary || "") + " " + (n.note || "") + " " + (n.source || n.domain || "")).toLowerCase();
+      return t.includes(lq) || (n.entityIds || []).some(id => entIds.has(id));
+    });
+    const rels = S.kb.relationships.filter(r => entIds.has(r.source) && entIds.has(r.target));
+
+    $("statusBar").innerHTML = `<span class="focus-tag">🔎 Results for "${esc(q)}" · ${ents.length} match${ents.length === 1 ? "" : "es"} · ${news.length} signal(s)${widened ? " · beyond current filter" : ""}<a id="clearFocus">show full view ✕</a></span>`;
+    const cf = document.getElementById("clearFocus"); if (cf) cf.onclick = clearSearch;
+
+    MAPVIEW.render(ents.length ? ents : view.entities, news, rels);
+    GRAPHVIEW.build(ents, rels);
+    renderSearchEntities(ents, q);
+    renderFeed(news);
+    renderSOV(ents.length ? ents : view.entities);
+    if (ents.length === 1) selectEntity(ents[0].id);
+  }
+  function renderSearchEntities(ents, q) {
+    const el = $("bdList"); if (!el) return;
+    if (!ents.length) {
+      el.innerHTML = `<p class="muted" style="padding:8px">No companies or brands match "${esc(q)}". The feed shows any signals that mention it — use ＋ Track in Market Pulse to monitor the term.</p>`;
+      return;
+    }
+    const items = ents.slice(0, 40).map(e => ({ id: e.id, name: e.name, category: e.category, country: e.country }));
+    el.innerHTML = `<div class="muted" style="padding:6px 8px;font-size:12px">${ents.length} match${ents.length === 1 ? "" : "es"} — click to focus</div>` + items.map(t => card(t, "")).join("");
+    wireCards(el);
+  }
+  function clearSearch() { S.search = null; $("fSearch").value = ""; $("statusBar").textContent = ""; refresh(); }
   function egoSubgraph(id) {
     const rels = S.kb.relationships;
     const keep = new Set([id]);

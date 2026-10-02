@@ -8,5 +8,6 @@
     "sov": true,
     "pulse": true
   },
-  "mapTiles": "dark"
+  "mapTiles": "dark",
+  "spikeSensitivity": "medium"
 }
